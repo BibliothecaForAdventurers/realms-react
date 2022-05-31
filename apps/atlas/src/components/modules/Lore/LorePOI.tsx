@@ -71,11 +71,12 @@ export const LorePOI = ({
       break;
     case '1001':
     case 'order':
-      poiName = 'the Order of ' + theOrders[parseInt(assetId)]?.name;
+      // TODO: find better way than parseInt(assetId || "") ?
+      poiName = 'the Order of ' + theOrders[parseInt(assetId || '')]?.name;
       break;
     case '1002':
     case 'resource':
-      poiName = resources[parseInt(assetId)]?.trait;
+      poiName = resources[parseInt(assetId || '')]?.trait;
       break;
     case '1003':
     case 'wonder':

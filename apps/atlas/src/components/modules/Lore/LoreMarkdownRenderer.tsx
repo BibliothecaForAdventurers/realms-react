@@ -19,11 +19,17 @@ export const LoreMarkdownRenderer = ({
       remarkPlugins={[poiRemarkPlugin]}
       components={{
         div: ({ node, ...props }) => {
-          if (!props.poiId) {
-            return <div {...props}>{node.children}</div>;
+          // TODO: it breaks build but it custom plugin for Remark - how to make it TypeScript?
+          if (!(props as any).poiId) {
+            return <div {...props}>{(node as any).children}</div>;
           }
 
-          return <LorePOI {...props} pois={pois} poisLoading={poisLoading} />;
+          const newProps = {
+            poiId: (props as any).poiId,
+            assetId: (props as any).assetId,
+          };
+
+          return <LorePOI {...newProps} />;
         },
       }}
       className={`prose prose-stone prose-sm text-2xl brightness-200`}

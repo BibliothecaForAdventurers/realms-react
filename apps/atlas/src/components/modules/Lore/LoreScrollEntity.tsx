@@ -16,7 +16,7 @@ export const LoreScrollEntity = ({ entity }) => {
     <div className={`p-6 my-2 mb-1 bg-black rounded-md`}>
       <h1 className={`text-6xl font-bold mb-6`}>{entity.revisions[0].title}</h1>
 
-      <LoreMarkdownRenderer pois={pois} poisLoading={poisLoading}>
+      <LoreMarkdownRenderer>
         {entity.revisions[0].markdown}
       </LoreMarkdownRenderer>
     </div>
