@@ -29,7 +29,7 @@ export function RealmBuildings(props: RealmsCardProps): ReactElement {
       building: building.name,
       requirements: building.limit,
       built: realmBuildings?.find(
-        (realmBuilding) => realmBuilding.id === building.id.toString()
+        (realmBuilding) => realmBuilding.buildingId === building.id
       )
         ? 1
         : 0,
