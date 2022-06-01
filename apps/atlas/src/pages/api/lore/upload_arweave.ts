@@ -1,10 +1,7 @@
 import Arweave from 'arweave';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const arweaveKey = JSON.parse(
-  Buffer.from(process.env.ARWEAVE_KEY as string, 'base64').toString()
-);
+import secrets from '@/util/secrets';
 
 const arweave = Arweave.init({
   host: 'arweave.net',
@@ -22,10 +19,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       {
         data: JSON.stringify(req.body),
       },
-      arweaveKey
+      secrets.arweaveKey
     );
 
-    await arweave.transactions.sign(tx, arweaveKey);
+    await arweave.transactions.sign(tx, secrets.arweaveKey);
 
     const arweaveResponse = await arweave.transactions.post(tx);
 
