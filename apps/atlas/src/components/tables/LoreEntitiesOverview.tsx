@@ -49,13 +49,13 @@ export function LoreEntitiesOverview(props: LoreEntitiesOverviewsProps) {
                     #{loreEntity.id}
                   </div>
                   <Moment format="DD/MM/YYYY">
-                    {loreEntity.revisions[0].createdAt}
+                    {loreEntity.revisions[0]?.createdAt}
                   </Moment>
                 </div>
               </div>
             </div>
-            <h1 className={`text-3xl`}>{loreEntity.revisions[0].title}</h1>
-            {loreEntity.revisions[0].excerpt}
+            <h1 className={`text-3xl`}>{loreEntity.revisions[0]?.title}</h1>
+            {loreEntity.revisions[0]?.excerpt}
           </div>
         ))}
     </div>
@@ -65,7 +65,7 @@ export function LoreEntitiesOverview(props: LoreEntitiesOverviewsProps) {
 {
   /* <div
             key={index}
-            className="flex flex-wrap w-full h-auto max-w-full overflow-x-auto rounded justify-between bg-black/80 p-4 text-xl items-center"
+            className="flex flex-wrap items-center justify-between w-full h-auto max-w-full p-4 overflow-x-auto text-xl rounded bg-black/80"
           >
             <div className={`flex`}>
               <div className={`mr-2 border border-gray-700 px-2`}>

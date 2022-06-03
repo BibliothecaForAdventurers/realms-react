@@ -106,11 +106,7 @@ function CryptModule() {
 }
 
 function BankModule() {
-  return (
-    <ResourceProvider>
-      <BankPanel />
-    </ResourceProvider>
-  );
+  return <BankPanel />;
 }
 
 function LootModule() {
