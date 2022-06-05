@@ -205,7 +205,6 @@ export const CreateLoreEntity = () => {
         </p>
         <CodeMirror
           ref={editorRef}
-          value={''}
           height="auto"
           theme={oneDark}
           placeholder={`Start writing your story here...`}
