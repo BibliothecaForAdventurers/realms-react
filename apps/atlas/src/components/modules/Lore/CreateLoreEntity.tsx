@@ -7,11 +7,12 @@ import {
   useContract,
   useStarknetInvoke,
 } from '@starknet-react/core';
+import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import CodeMirror from '@uiw/react-codemirror';
 import Arweave from 'arweave';
 import axios from 'axios';
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Contract, defaultProvider } from 'starknet';
 import type { Abi } from 'starknet';
 import { bnToUint256 } from 'starknet/dist/utils/uint256';
@@ -55,11 +56,11 @@ export const CreateLoreEntity = () => {
     method: 'create_entity',
   });
 
-  const [entityTitle, setEntityTitle] = useState('Grug The Dark Lord');
+  const [entityTitle, setEntityTitle] = useState('');
 
-  const [editorValue, setEditorValue] = useState(
-    '## When The Realm Stood Still\nThe ${1000, 20} is under siege and the **Dark Forces** are marching as we speak...\n\n${3000, 10000204001012300} is the protector of the ${1000, 20} but Grug (${3000, 12317981274}) is relentless as always.\n\n${1000, 200} has a dangerous cave (${2000, 5677}) containing an artefact that can stop the **Dark Forces** but would our heroes dare to enter it and crawl the cave in time?\n\n## New Era\nSomething is happening to the magic of the known universe... ${1001, 15} noticed it as well when ${1003, 1} shifted the mana flow into the abyss. They observed that resources ${1002, 5} and ${1002, 10} are slowly becoming more rare on the magical ${1004}.\n\nThe ${1, 10} contains all knowledge about the events.\n\n\n'
-  );
+  const editorRef = useRef<ReactCodeMirrorRef>({});
+
+  const [entityMarkdown, setEntityMarkdown] = useState('');
 
   // const [isCreating, setIsCreating] = useState(false);
   const [creatingStep, setCreatingStep] = useState<CREATING_STEPS>(
@@ -136,8 +137,8 @@ export const CreateLoreEntity = () => {
 
   const entityData = {
     title: entityTitle,
-    markdown: editorValue,
-    pois: extractPOIs(editorValue),
+    markdown: entityMarkdown,
+    pois: extractPOIs(entityMarkdown),
   };
 
   const createEntity = async () => {
@@ -203,12 +204,15 @@ export const CreateLoreEntity = () => {
           1003/wonder, 1004/(AMM), 2000/crypt, 3000/(lord/lady)
         </p>
         <CodeMirror
-          value={editorValue}
+          ref={editorRef}
+          value={'\n\n\n\n'}
           height="auto"
           theme={oneDark}
+          placeholder={`Start writing your story here...`}
+          minHeight={`100px`}
           extensions={[markdown(), EditorView.lineWrapping]}
-          onChange={(value) => {
-            setEditorValue(value);
+          onChange={(value, viewUpdate) => {
+            setEntityMarkdown(value);
           }}
         />
 
@@ -334,7 +338,7 @@ export const CreateLoreEntity = () => {
         <div>
           <LoreScrollEntity
             entity={{
-              revisions: [{ title: entityTitle, markdown: editorValue }],
+              revisions: [{ title: entityTitle, markdown: entityMarkdown }],
             }}
           />
         </div>
