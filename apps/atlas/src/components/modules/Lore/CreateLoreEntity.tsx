@@ -205,15 +205,15 @@ export const CreateLoreEntity = () => {
         </p>
         <CodeMirror
           ref={editorRef}
-          value={'\n\n\n\n'}
+          value={''}
           height="auto"
           theme={oneDark}
           placeholder={`Start writing your story here...`}
           minHeight={`100px`}
           extensions={[markdown(), EditorView.lineWrapping]}
-          onChange={(value, viewUpdate) => {
-            setEntityMarkdown(value);
-          }}
+          // onChange={(value, viewUpdate) => {
+          //   setEntityMarkdown(value);
+          // }}
         />
 
         <div>
