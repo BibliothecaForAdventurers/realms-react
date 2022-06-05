@@ -19,7 +19,6 @@ import { useGetLorePoisQuery } from '@/generated/graphql';
 import type { UploadArweaveResponse } from '@/pages/api/lore/upload_arweave';
 import loreContractABI from '../../../abi/lore/Lore.json';
 import { extractPOIs, shortStringToBigIntUtil } from './helpers';
-import { LoreMarkdownRenderer } from './LoreMarkdownRenderer';
 import { LoreScrollEntity } from './LoreScrollEntity';
 
 enum CREATING_STEPS {
