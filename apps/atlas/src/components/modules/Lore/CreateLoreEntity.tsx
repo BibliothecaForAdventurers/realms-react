@@ -1,25 +1,34 @@
 import { Button } from '@bibliotheca-dao/ui-lib';
-import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { EditorView } from '@codemirror/view';
 import {
   useStarknet,
   useContract,
   useStarknetInvoke,
 } from '@starknet-react/core';
-import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
-import CodeMirror from '@uiw/react-codemirror';
 import Arweave from 'arweave';
 import axios from 'axios';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
-import { Contract, defaultProvider } from 'starknet';
+import Prism from 'prismjs';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
+import { Text, createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, Editable, withReact } from 'slate-react';
+import { defaultProvider } from 'starknet';
 import type { Abi } from 'starknet';
 import { bnToUint256 } from 'starknet/dist/utils/uint256';
-import { useGetLorePoisQuery } from '@/generated/graphql';
 import type { UploadArweaveResponse } from '@/pages/api/lore/upload_arweave';
 import loreContractABI from '../../../abi/lore/Lore.json';
-import { extractPOIs, shortStringToBigIntUtil } from './helpers';
+import { initialValue, LoreEditor } from './editor';
+import {
+  extractPOIs,
+  shortStringToBigIntUtil,
+  slateToMarkdown,
+} from './helpers';
 import { LoreScrollEntity } from './LoreScrollEntity';
 
 enum CREATING_STEPS {
@@ -38,6 +47,18 @@ const arweave = Arweave.init({
 });
 
 export const CreateLoreEntity = () => {
+  // States
+  const [entityTitle, setEntityTitle] = useState('');
+  const [editorValue, setEditorValue] = useState(initialValue);
+  const [creatingStep, setCreatingStep] = useState<CREATING_STEPS>(
+    CREATING_STEPS.INITIAL
+  );
+  const [arweaveTxID, setArweaveTxID] = useState<string | null>(null);
+  const [starknetTxID, setStarknetTxID] = useState<string | undefined>(
+    undefined
+  );
+
+  // Hooks
   const starknet = useStarknet();
 
   const { contract: loreContract } = useContract({
@@ -56,22 +77,7 @@ export const CreateLoreEntity = () => {
     method: 'create_entity',
   });
 
-  const [entityTitle, setEntityTitle] = useState('');
-
-  const editorRef = useRef<ReactCodeMirrorRef>({});
-
-  const [entityMarkdown, setEntityMarkdown] = useState('');
-
-  // const [isCreating, setIsCreating] = useState(false);
-  const [creatingStep, setCreatingStep] = useState<CREATING_STEPS>(
-    CREATING_STEPS.INITIAL
-  );
-
-  const [arweaveTxID, setArweaveTxID] = useState<string | null>(null);
-  const [starknetTxID, setStarknetTxID] = useState<string | undefined>(
-    undefined
-  );
-
+  // Rest
   const wait = async (milliseconds: number) => {
     return new Promise((resolve, _) => {
       setTimeout(resolve, milliseconds);
@@ -135,10 +141,12 @@ export const CreateLoreEntity = () => {
     return invoke({ args: args });
   };
 
+  const markdown = slateToMarkdown(editorValue);
+
   const entityData = {
     title: entityTitle,
-    markdown: entityMarkdown,
-    pois: extractPOIs(entityMarkdown),
+    markdown: markdown,
+    pois: extractPOIs(markdown),
   };
 
   const createEntity = async () => {
@@ -203,16 +211,12 @@ export const CreateLoreEntity = () => {
           supported 🔗: 1/(scroll), 1000/realm, 1001/order, 1002/resource,
           1003/wonder, 1004/(AMM), 2000/crypt, 3000/(lord/lady)
         </p>
-        <CodeMirror
-          ref={editorRef}
-          height="auto"
-          theme={oneDark}
-          placeholder={`Start writing your story here...`}
-          minHeight={`100px`}
-          extensions={[markdown(), EditorView.lineWrapping]}
-          // onChange={(value, viewUpdate) => {
-          //   setEntityMarkdown(value);
-          // }}
+
+        <LoreEditor
+          className={`text-white outline-none bg-gray-900 p-4 rounded-md`}
+          onChange={(value) => {
+            setEditorValue(value);
+          }}
         />
 
         <div>
@@ -337,7 +341,9 @@ export const CreateLoreEntity = () => {
         <div>
           <LoreScrollEntity
             entity={{
-              revisions: [{ title: entityTitle, markdown: entityMarkdown }],
+              revisions: [
+                { title: entityTitle, markdown: entityData.markdown },
+              ],
             }}
           />
         </div>

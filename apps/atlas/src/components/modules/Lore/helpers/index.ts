@@ -1,3 +1,6 @@
+import Prism from 'prismjs';
+import * as SlateDefault from 'slate';
+
 type POI = {
   id: string;
   assetId?: string;
@@ -68,3 +71,87 @@ export function shortStringToBigIntUtil(convertableString: string) {
 export function bigIntToShortStringUtil(convertableBigInt: bigint) {
   return Buffer.from(convertableBigInt.toString(16), 'hex').toString();
 }
+
+export function slateToMarkdown(value) {
+  return (
+    value
+      // Return the string content of each paragraph in the value's children.
+      .map((n) => SlateDefault.Node.string(n))
+      // Join them all with line breaks denoting paragraphs.
+      .join('\n')
+  );
+}
+
+Prism.languages.markdown = Prism.languages.extend('markup', {});
+
+/* eslint-disable */
+Prism.languages.insertBefore('markdown', 'prolog', {
+  blockquote: { pattern: /^>(?:[\t ]*>)*/m, alias: 'punctuation' },
+  code: [
+    { pattern: /^(?: {4}|\t).+/m, alias: 'keyword' },
+    { pattern: /``.+?``|`[^`\n]+`/, alias: 'keyword' },
+  ],
+  title: [
+    {
+      pattern: /\w+.*(?:\r?\n|\r)(?:==+|--+)/,
+      alias: 'important',
+      inside: { punctuation: /==+$|--+$/ },
+    },
+    {
+      pattern: /(^\s*)#+.+/m,
+      lookbehind: !0,
+      alias: 'important',
+      inside: { punctuation: /^#+|#+$/ },
+    },
+  ],
+  hr: {
+    pattern: /(^\s*)([*-])([\t ]*\2){2,}(?=\s*$)/m,
+    lookbehind: !0,
+    alias: 'punctuation',
+  },
+  list: {
+    pattern: /(^\s*)(?:[*+-]|\d+\.)(?=[\t ].)/m,
+    lookbehind: !0,
+    alias: 'punctuation',
+  },
+  'url-reference': {
+    pattern:
+      /!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/,
+    inside: {
+      variable: { pattern: /^(!?\[)[^\]]+/, lookbehind: !0 },
+      string: /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,
+      punctuation: /^[\[\]!:]|[<>]/, // eslint-disable-line regexp/no-useless-escape no-useless-escape
+    },
+    alias: 'url',
+  },
+  bold: {
+    pattern: /(^|[^\\])(\*\*|__)(?:(?:\r?\n|\r)(?!\r?\n|\r)|.)+?\2/,
+    lookbehind: !0,
+    inside: { punctuation: /^\*\*|^__|\*\*$|__$/ },
+  },
+  italic: {
+    pattern: /(^|[^\\])([*_])(?:(?:\r?\n|\r)(?!\r?\n|\r)|.)+?\2/,
+    lookbehind: !0,
+    inside: { punctuation: /^[*_]|[*_]$/ },
+  },
+  url: {
+    pattern:
+      /!?\[[^\]]+\](?:\([^\s)]+(?:[\t ]+"(?:\\.|[^"\\])*")?\)| ?\[[^\]\n]*\])/,
+    inside: {
+      variable: { pattern: /(!?\[)[^\]]+(?=\]$)/, lookbehind: !0 },
+      string: { pattern: /"(?:\\.|[^"\\])*"(?=\)$)/ },
+    },
+  },
+});
+(Prism.languages.markdown as any).bold.inside.url = Prism.util.clone(
+  Prism.languages.markdown.url
+);
+(Prism.languages.markdown as any).italic.inside.url = Prism.util.clone(
+  Prism.languages.markdown.url
+);
+(Prism.languages.markdown as any).bold.inside.italic = Prism.util.clone(
+  (Prism.languages.markdown as any).italic
+);
+(Prism.languages.markdown as any).italic.inside.bold = Prism.util.clone(
+  (Prism.languages.markdown as any).bold
+);
