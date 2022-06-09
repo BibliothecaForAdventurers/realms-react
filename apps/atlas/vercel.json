@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/lore/upload_arweave.ts": {
+    "api/lore/upload_arweave.js": {
       "includeFiles": "secrets.json.enc"
     }
   }
