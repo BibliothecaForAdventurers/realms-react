@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import path from 'path';
 
 export type TSecrets = {
   arweaveKey: any;
@@ -11,7 +12,9 @@ const decipher = crypto.createDecipheriv(
   process.env.SECRETS_ENCRYPTION_IV as string
 );
 
-const file = fs.readFileSync('secrets.json.enc');
+const secretsFilePath = path.join(process.cwd(), 'secrets.json.enc');
+
+const file = fs.readFileSync(secretsFilePath);
 
 let decrypted = decipher.update(file.toString(), 'base64', 'utf8');
 decrypted += decipher.final('utf8');
