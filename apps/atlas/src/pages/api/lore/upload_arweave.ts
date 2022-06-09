@@ -13,7 +13,10 @@ export type UploadArweaveResponse = {
   arweaveId: string;
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
     const tx = await arweave.createTransaction(
       {
@@ -44,4 +47,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     );
     return;
   }
-};
+}
