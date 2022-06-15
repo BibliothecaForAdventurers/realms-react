@@ -56,6 +56,7 @@ const useSettling = (): Settling => {
       toBN(account as string).toString(),
       toBN(settlingContract?.address as string).toString(),
     ],
+    options: { watch: false },
   });
 
   useEffect(() => {
@@ -70,16 +71,28 @@ const useSettling = (): Settling => {
     settleRealm: (tokenId: number) => {
       settleRealmAction.invoke({
         args: [bnToUint256(toBN(tokenId))],
+        metadata: {
+          action: 'settle',
+          realmId: tokenId,
+        },
       });
     },
     unsettleRealm: (tokenId: number) => {
       unsettleRealmAction.invoke({
         args: [bnToUint256(toBN(tokenId))],
+        metadata: {
+          action: 'unsettle',
+          realmId: tokenId,
+        },
       });
     },
     mintRealm: (tokenId: number) => {
       mintRealmAction.invoke({
         args: [toBN(account as string).toString(), bnToUint256(toBN(tokenId))],
+        metadata: {
+          action: 'mint',
+          realmId: tokenId,
+        },
       });
     },
     isRealmsApproved,

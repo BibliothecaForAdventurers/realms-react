@@ -1,43 +1,85 @@
-import { Table, Button, ResourceIcon } from '@bibliotheca-dao/ui-lib';
+import { Table, Button } from '@bibliotheca-dao/ui-lib';
 import type { ReactElement } from 'react';
+import { useGetBuildingsByRealmIdQuery } from '@/generated/graphql';
 import useBuildings from '@/hooks/settling/useBuildings';
-import { buildings } from '@/util/buildings';
+import { IsOwner } from '@/shared/Getters/Realm';
 import type { RealmsCardProps } from '../../types';
 
 type Row = {
-  building: string;
-  requirements: string;
+  building: ReactElement;
+  requirements: ReactElement;
   built: number;
-  buildAction: ReactElement;
+  population: ReactElement;
+  culture: ReactElement;
+  food: ReactElement;
+  buildAction: any;
 };
 
 export function RealmBuildings(props: RealmsCardProps): ReactElement {
-  const { build } = useBuildings({
-    token_id: props.realm.realmId,
+  const { data } = useGetBuildingsByRealmIdQuery({
+    variables: { id: props.realm.realmId },
   });
+
+  const buildings = data?.getBuildingsByRealmId ?? [];
+  const { build } = useBuildings();
   const columns = [
     { Header: 'Building', id: 1, accessor: 'building' },
     { Header: 'Requirements', id: 2, accessor: 'requirements' },
-    { Header: 'Built', id: 3, accessor: 'built' },
-    { Header: 'Build', id: 3, accessor: 'buildAction' },
+    { Header: 'Population', id: 3, accessor: 'population' },
+    { Header: 'Culture', id: 4, accessor: 'culture' },
+    { Header: 'Food', id: 4, accessor: 'food' },
+    { Header: 'Built', id: 5, accessor: 'built' },
+    { Header: 'Build', id: 6, accessor: 'buildAction' },
   ];
   const tableOptions = { is_striped: true };
-  const realmBuildings = props.realm.buildings;
+  const formatStat = (stat: number): string => {
+    return stat > 0 ? `+${stat}` : `${stat}`;
+  };
 
   const defaultData: Row[] = buildings.map((building) => {
     return {
-      building: building.name,
-      requirements: building.limit,
-      built: realmBuildings?.find(
-        (realmBuilding) => realmBuilding.buildingId === building.id
-      )
-        ? 1
-        : 0,
-      buildAction: (
+      building: (
+        <span className="tracking-widest uppercase">
+          {building.buildingName}
+        </span>
+      ),
+      requirements: (
+        <span className="tracking-widest uppercase">
+          {building.limitTraitName}
+        </span>
+      ),
+      population: (
+        <span>
+          {parseInt(formatStat(building.population)) * building.count}{' '}
+          <span className="text-white/50 ">
+            ({formatStat(building.population)})
+          </span>{' '}
+        </span>
+      ),
+      culture: (
+        <span>
+          {parseInt(formatStat(building.culture)) * building.count}{' '}
+          <span className="text-xs text-white/50">
+            ({formatStat(building.culture)})
+          </span>{' '}
+        </span>
+      ),
+      food: (
+        <span>
+          {parseInt(formatStat(building.food)) * building.count}{' '}
+          <span className="text-xs text-white/50">
+            ({formatStat(building.food)})
+          </span>{' '}
+        </span>
+      ),
+      built: building.count,
+      buildAction: IsOwner(props.realm?.settledOwner) && (
         <Button
-          onClick={() => build(building.id)}
+          aria-details="klajsfl"
+          onClick={() => build(props.realm.realmId, building.buildingId)}
           variant="primary"
           type="button"
+          size="xs"
         >
           Build
         </Button>
@@ -46,11 +88,15 @@ export function RealmBuildings(props: RealmsCardProps): ReactElement {
   });
 
   return (
-    <div className="p-2">
+    <div className="w-full mt-2">
       <Table columns={columns} data={defaultData} options={tableOptions} />
-      <div className="flex justify-end w-full pt-4">
-        <Button variant="primary">Build All</Button>
-      </div>
+      {IsOwner(props.realm?.settledOwner) && (
+        <div className="flex justify-end w-full mt-4">
+          <Button size="xs" variant="primary">
+            Build All
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

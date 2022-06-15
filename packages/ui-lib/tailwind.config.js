@@ -44,6 +44,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      strokeWidth: {
+        8: '8px',
+      },
       letterSpacing: {
         veryWide: '0.165em',
       },
@@ -131,6 +134,24 @@ module.exports = {
           /* Ember's Glow */ main: '#5D0503',
           door: '#FF1800',
           point: '#B75700',
+        },
+        order: {
+          power: '#F4B547',
+          giants: '#EB544D',
+          titans: '#EC68A8',
+          skill: '#706DFF',
+          perfection: '#8E35FF',
+          twins: '#0020C6',
+          reflection: '#00A2AA',
+          detection: '#139757',
+          fox: '#D47230',
+          vitriol: '#59A509',
+          brilliance: '#7DFFBA',
+          enlightenment: '#1380FF',
+          protection: '#00C3A1',
+          fury: '#82005E',
+          rage: '#C74800',
+          anger: '#89192D',
         },
       },
     },

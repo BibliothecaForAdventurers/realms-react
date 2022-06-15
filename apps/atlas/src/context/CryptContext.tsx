@@ -1,10 +1,16 @@
 import type { Dispatch } from 'react';
 import { createContext, useContext, useReducer } from 'react';
 import { storage } from '@/util/localStorage';
+import { CryptsMax } from '../constants';
+import type { MinMaxRange } from '../types';
 
 const CryptFavoriteLocalStorageKey = 'crypt.favourites';
 
-type StatsFilter = { size: number; numDoors: number; numPoints: number };
+type StatsFilter = {
+  size: MinMaxRange;
+  numDoors: MinMaxRange;
+  numPoints: MinMaxRange;
+};
 
 interface CryptState {
   statsFilter: StatsFilter;
@@ -38,9 +44,9 @@ interface CryptActions {
 
 const defaultFilters = {
   statsFilter: {
-    size: 0,
-    numDoors: 0,
-    numPoints: 0,
+    size: { min: 0, max: CryptsMax.Size },
+    numDoors: { min: 0, max: CryptsMax.NumDoors },
+    numPoints: { min: 0, max: CryptsMax.NumPoints },
   },
   environmentsFilter: [],
   searchIdFilter: '',
@@ -124,7 +130,7 @@ export function useCryptContext() {
   return useContext(CryptContext);
 }
 
-export function CryptProvider({ children }: { children: JSX.Element }) {
+export function CryptProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cryptReducer, {
     ...defaultCryptState,
     favouriteCrypt: storage<string[]>(CryptFavoriteLocalStorageKey, []).get(),

@@ -1,14 +1,23 @@
-import { Table, Button, ResourceIcon } from '@bibliotheca-dao/ui-lib';
+import {
+  Table,
+  Button,
+  ResourceIcon,
+  Spinner,
+  CountdownTimer,
+} from '@bibliotheca-dao/ui-lib';
+import { formatEther } from '@ethersproject/units';
 import type { ReactElement } from 'react';
 import { toBN } from 'starknet/dist/utils/number';
 import useResources from '@/hooks/settling/useResources';
-import { resources } from '@/util/resources';
+import { IsOwner } from '@/shared/Getters/Realm';
+import { resources, findResourceName } from '@/util/resources';
 
 import type { RealmsCardProps } from '../../types';
+
 type Row = {
   resource: ReactElement;
-  baseOutput: number;
-  claimableResources: number;
+  // baseOutput: number;
+  claimableResources: string | ReactElement;
   // totalOutput: number;
   level: number;
   build: ReactElement;
@@ -17,10 +26,12 @@ type Row = {
 export function RealmResources(props: RealmsCardProps): ReactElement {
   const {
     availableResources,
+    raidableVault,
     claim,
     upgrade,
     claimableLords,
     claimableResources,
+    loadingClaimable,
   } = useResources({
     token_id: props.realm.realmId,
     resources: props.realm.resources,
@@ -33,7 +44,9 @@ export function RealmResources(props: RealmsCardProps): ReactElement {
         resource: (
           <span className="flex">
             <ResourceIcon
-              resource={re.type.replace(' ', '') || ''}
+              resource={
+                findResourceName(re.resourceId)?.trait.replace(' ', '') || ''
+              }
               size="md"
               className="mr-4"
             />
@@ -42,13 +55,17 @@ export function RealmResources(props: RealmsCardProps): ReactElement {
             </span>
           </span>
         ),
-        baseOutput: 100,
-        claimableResources:
-          (claimableResources && claimableResources[index]?.low.toNumber()) ||
-          0,
-        // totalOutput: 122,
+        // baseOutput: 100,
+        claimableResources: (claimableResources[index] &&
+          formatEther(claimableResources[index].toString(10))) || (
+          <Spinner size="md" scheme="white" variant="bricks" />
+        ),
+        raidableResources: (raidableVault[index] &&
+          formatEther(raidableVault[index].toString(10))) || (
+          <Spinner size="md" scheme="white" variant="bricks" />
+        ),
         level: re.level,
-        build: (
+        build: IsOwner(props.realm?.ownerL2) && (
           <Button
             variant="secondary"
             onClick={() => upgrade(resourceId)}
@@ -63,26 +80,66 @@ export function RealmResources(props: RealmsCardProps): ReactElement {
 
   const columns = [
     { Header: 'Resource', id: 1, accessor: 'resource' },
-    { Header: 'Base Output', id: 2, accessor: 'baseOutput' },
-    { Header: 'Claimable Resources', id: 3, accessor: 'claimableResources' },
-    // { Header: 'Total Output', id: 3, accessor: 'totalOutput' },
+    // { Header: 'Base Output', id: 2, accessor: 'baseOutput' },
+    { Header: 'Claimable Resources', id: 2, accessor: 'claimableResources' },
+    { Header: 'Raidable Resources', id: 3, accessor: 'raidableResources' },
     { Header: 'level', id: 4, accessor: 'level' },
-    { Header: 'Build', id: 5, accessor: 'build' },
+    // { Header: 'Build', id: 5, accessor: 'build' },
   ];
   const tableOptions = { is_striped: true };
   return (
-    <div>
-      <div className="flex justify-between">
-        <span>Claimable Lords: {claimableLords}</span>
-        <span>
-          Accrued: {availableResources.daysAccrued}D{' '}
-          {availableResources.remainder}m
+    <div className="w-full">
+      <div className="flex justify-between p-2 text-white uppercase">
+        <span className="flex flex-col">
+          <span> Claimable Lords:</span>
+
+          <span className="text-3xl">
+            {' '}
+            {claimableLords ? (
+              formatEther(claimableLords.toString(10))
+            ) : (
+              <Spinner
+                className="ml-4"
+                size="md"
+                scheme="white"
+                variant="bricks"
+              />
+            )}
+          </span>
+        </span>
+        <span className="flex flex-col">
+          <span>Days Accrued: </span>
+          {/* <CountdownTimer date={'16544528050000'} /> */}
+          <span className="text-3xl">{availableResources.daysAccrued}D</span>
         </span>
       </div>
       <Table columns={columns} data={mappedRowData} options={tableOptions} />
-      <Button className="mt-3 ml-2" variant="primary" onClick={() => claim()}>
-        Harvest Resources
-      </Button>
+
+      {IsOwner(props.realm?.settledOwner) && (
+        <Button
+          size="sm"
+          className="mt-3 ml-2"
+          variant="primary"
+          onClick={() => claim()}
+        >
+          Harvest Resources
+        </Button>
+      )}
+      {!IsOwner(props.realm?.settledOwner) && (
+        <Button
+          size="sm"
+          href={
+            `/combat?` +
+            `defendingRealmId=` +
+            props.realm.realmId +
+            '&attackingRealmId=5500'
+          }
+          className="mt-3 ml-2"
+          variant="primary"
+        >
+          Raid Vault
+        </Button>
+      )}
     </div>
   );
 }

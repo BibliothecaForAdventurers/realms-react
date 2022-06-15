@@ -2,6 +2,7 @@
 import { FlyToInterpolator } from '@deck.gl/core';
 import { ScatterplotLayer, IconLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
+import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { Map } from 'react-map-gl';
 import Layout from '@/components/Layout';
@@ -11,10 +12,13 @@ import { BaseModal } from '@/components/modals/BaseModal';
 import { Header } from '@/components/navigation/header';
 import { AccountPanel } from '@/components/panels/AccountPanel';
 import { BankPanel } from '@/components/panels/BankPanel';
+import { CombatPanel } from '@/components/panels/CombatPanel';
 import { CryptsPanel } from '@/components/panels/CryptsPanel';
 import { GaPanel } from '@/components/panels/GaPanel';
 import { LootPanel } from '@/components/panels/LootPanel';
 import { LorePanel } from '@/components/panels/LorePanel';
+import { RaidResultsPanel } from '@/components/panels/RaidResultsPanel';
+import { RealmDetailsPanel } from '@/components/panels/RealmDetailsPanel';
 import { RealmsPanel } from '@/components/panels/RealmsPanel';
 import { TradePanel } from '@/components/panels/TradePanel';
 import { BridgeRealmsSideBar } from '@/components/sidebars/BridgeRealmsSideBar';
@@ -22,12 +26,13 @@ import { CryptsSideBar } from '@/components/sidebars/CryptsSideBar';
 import { GASideBar } from '@/components/sidebars/GASideBar';
 import { LootSideBar } from '@/components/sidebars/LootSideBar';
 import { MenuSideBar } from '@/components/sidebars/MenuSideBar';
+import { MilitarySideBar } from '@/components/sidebars/MilitarySideBar';
 import { RealmSideBar } from '@/components/sidebars/RealmsSideBar';
 import { ResourceSwapSideBar } from '@/components/sidebars/ResourceSwapSideBar';
 import { SettleRealmsSideBar } from '@/components/sidebars/SettleRealmsSideBar';
+import { TransactionCartSideBar } from '@/components/sidebars/TransactionCartSideBar';
 import { CryptProvider } from '@/context/CryptContext';
 import { GaProvider } from '@/context/GaContext';
-import { JourneyProvider } from '@/context/JourneyContext';
 import { LootProvider } from '@/context/LootContext';
 import { RealmProvider } from '@/context/RealmContext';
 import { ResourceProvider } from '@/context/ResourcesContext';
@@ -35,50 +40,73 @@ import crypts from '@/geodata/crypts_all.json';
 import ga_bags from '@/geodata/ga_bags.json';
 import loot_bags from '@/geodata/loot_bags.json';
 import realms from '@/geodata/realms.json';
-import { useUIContext, UIProvider } from '@/hooks/useUIContext';
+import { useAtlasContext, AtlasProvider } from '@/hooks/useAtlasContext';
 
 // import order_highlights from '@/geodata/order_highlights.json';
 import type { RealmFeatures } from '@/types/index';
 
-function Atlas() {
+export default function AtlasPage() {
   return (
-    <UIProvider>
+    <AtlasProvider>
       <Layout>
         <div className="relative flex h-full overflow-hidden sm:h-screen">
           <MenuSideBar />
           <div className="relative flex flex-col w-full">
-            <Header />
-            <div className="relative w-full h-full">
-              <BaseModal />
-              <ArtBackground />
-              <AccountModule />
-              <LootModule />
-              <GaModule />
-              <RealmsModule />
-              <CryptModule />
-              <BankModule />
-              <TradePanel />
-              <ResourceSwapSideBar />
-              <FlyTo />
-              <MapModule />
-            </div>
+            <ResourceProvider>
+              <Header />
+
+              <AtlasMain />
+            </ResourceProvider>
           </div>
         </div>
       </Layout>
-    </UIProvider>
+    </AtlasProvider>
+  );
+}
+
+function AtlasMain() {
+  return (
+    <div className="relative w-full h-full">
+      <ArtBackground />
+      <AccountModule />
+      <LootModule />
+      <GaModule />
+      <RealmsModule />
+      <CryptModule />
+      <BankPanel />
+      <ResourceSwapSideBar />
+      <TradePanel />
+      <CombatPanel />
+      {/* <FlyTo /> */}
+      <MapModule />
+      <BaseModal />
+      <TransactionCartSideBar />
+      <MilitarySideBar />
+    </div>
   );
 }
 
 function RealmsModule() {
+  const { query } = useRouter();
+  const segments = query?.segment ?? [];
+  const realmId = segments[1] ? Number(segments[1]) : 0;
   return (
     <RealmProvider>
-      <>
-        <RealmsPanel />
-        <LorePanel />
-        <RealmSideBar />
-        <BridgeRealmsSideBar />
-        <SettleRealmsSideBar />
-      </>
+      {realmId > 0 &&
+        (segments[2] === 'combat' ? (
+          <RaidResultsPanel defendId={realmId} tx={segments[3]} />
+        ) : (
+          <RealmDetailsPanel realmId={realmId} />
+        ))}
+      {realmId === 0 && (
+        <>
+          <RealmsPanel />
+          <LorePanel />
+          <RealmSideBar />
+          <BridgeRealmsSideBar />
+          <SettleRealmsSideBar />
+        </>
+      )}
     </RealmProvider>
   );
 }
@@ -86,10 +114,8 @@ function RealmsModule() {
 function GaModule() {
   return (
     <GaProvider>
-      <>
-        <GaPanel />
-        <GASideBar />
-      </>
+      <GaPanel />
+      <GASideBar />
     </GaProvider>
   );
 }
@@ -97,42 +123,37 @@ function GaModule() {
 function CryptModule() {
   return (
     <CryptProvider>
-      <>
-        <CryptsPanel />
-        <CryptsSideBar />
-      </>
+      <CryptsPanel />
+      <CryptsSideBar />
     </CryptProvider>
   );
 }
 
 function BankModule() {
-  return <BankPanel />;
+  return (
+    <ResourceProvider>
+      <BankPanel />
+      <ResourceSwapSideBar />
+    </ResourceProvider>
+  );
 }
 
 function LootModule() {
-  const { selectedId } = useUIContext();
-
   return (
     <LootProvider>
-      <>
-        <LootPanel />
-        <LootSideBar id={selectedId} />
-      </>
+      <LootPanel />
+      <LootSideBar />
     </LootProvider>
   );
 }
 
 function AccountModule() {
-  return (
-    <JourneyProvider>
-      <AccountPanel />
-    </JourneyProvider>
-  );
+  return <AccountPanel />;
 }
 
 function MapModule() {
-  const ITEM_VIEW_LEVEL = 5;
-  const { openDetails, selectedId, coordinates } = useUIContext();
+  const ItemViewLevel = 5;
+  const { openDetails, selectedId, coordinates } = useAtlasContext();
   const [resource] = useState<Array<string>>([]);
 
   const filteredData = () => {
@@ -163,7 +184,7 @@ function MapModule() {
     extruded: true,
     pickable: true,
     opacity: 1,
-    visible: viewState.zoom < ITEM_VIEW_LEVEL ? false : true,
+    visible: viewState.zoom < ItemViewLevel ? false : true,
     getPosition: (d: any) => d.geometry.coordinates,
     getRadius: (d: any) =>
       d.properties.tokenId === parseInt(selectedId) ? 4000 : 100,
@@ -187,7 +208,7 @@ function MapModule() {
     extruded: true,
     pickable: true,
     opacity: 1,
-    visible: viewState.zoom < ITEM_VIEW_LEVEL ? false : true,
+    visible: viewState.zoom < ItemViewLevel ? false : true,
     getPosition: (d: any) => d.geometry.coordinates,
     getRadius: (d: any) =>
       d.properties.realm_idx === parseInt(selectedId) ? 4000 : 1,
@@ -210,7 +231,7 @@ function MapModule() {
     filled: true,
     extruded: true,
     pickable: true,
-    visible: viewState.zoom < ITEM_VIEW_LEVEL ? false : true,
+    visible: viewState.zoom < ItemViewLevel ? false : true,
     opacity: 1,
     getPosition: (d: any) => d.geometry.coordinates,
     getRadius: 1,
@@ -233,7 +254,7 @@ function MapModule() {
     filled: true,
     extruded: true,
     pickable: true,
-    visible: viewState.zoom < ITEM_VIEW_LEVEL ? false : true,
+    visible: viewState.zoom < ItemViewLevel ? false : true,
     opacity: 1,
     getPosition: (d: any) => d.geometry.coordinates,
     getRadius: 1,
@@ -260,11 +281,11 @@ function MapModule() {
     iconAtlas:
       'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
     iconMapping: iconMapping,
-    getIcon: (d) => 'marker',
+    getIcon: () => 'marker',
     sizeScale: 5,
     getPosition: (d: any) => d.geometry.coordinates,
-    getSize: (d) => 5,
-    getColor: (d: any) => [255, 255, 255],
+    getSize: () => 5,
+    getColor: () => [255, 255, 255],
   });
 
   useEffect(() => {
@@ -321,5 +342,3 @@ function MapModule() {
     </DeckGL>
   );
 }
-
-export default Atlas;

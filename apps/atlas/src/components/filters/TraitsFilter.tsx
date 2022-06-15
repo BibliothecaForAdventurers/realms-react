@@ -2,20 +2,17 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
+import { RealmsMax } from '@/constants/index';
 import { RealmTraitType } from '@/generated/graphql';
 import { useOnClickOutsideElement } from '@/hooks/useOnClickOutsideElement';
+import type { MinMaxRange } from '@/types/index';
 import { RangeSliderFilter } from './RangeSliderFilter';
 
-const RegionMax = 7;
-const CityMax = 21;
-const HarbourMax = 35;
-const RiverMax = 60;
-
 type Traits = {
-  [RealmTraitType.Region]: number;
-  [RealmTraitType.City]: number;
-  [RealmTraitType.Harbor]: number;
-  [RealmTraitType.River]: number;
+  [RealmTraitType.Region]: MinMaxRange;
+  [RealmTraitType.City]: MinMaxRange;
+  [RealmTraitType.Harbor]: MinMaxRange;
+  [RealmTraitType.River]: MinMaxRange;
 };
 
 type TraitsFilterProps = {
@@ -31,31 +28,47 @@ export function TraitsFilter(props: TraitsFilterProps) {
     setIsOpen(false);
   });
 
-  const onRegionFilterChange = (value: number) => {
-    const updatedTraits = { ...props.traits, [RealmTraitType.Region]: value };
+  const onRegionFilterChange = (value: number[]) => {
+    const updatedTraits = {
+      ...props.traits,
+      [RealmTraitType.Region]: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedTraits);
   };
 
-  const onCityFilterChange = (value: number) => {
-    const updatedTraits = { ...props.traits, [RealmTraitType.City]: value };
+  const onCityFilterChange = (value: number[]) => {
+    const updatedTraits = {
+      ...props.traits,
+      [RealmTraitType.City]: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedTraits);
   };
 
-  const onHarbourFilterChange = (value: number) => {
-    const updatedTraits = { ...props.traits, [RealmTraitType.Harbor]: value };
+  const onHarbourFilterChange = (value: number[]) => {
+    const updatedTraits = {
+      ...props.traits,
+      [RealmTraitType.Harbor]: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedTraits);
   };
 
-  const onRiverFilterChange = (value: number) => {
-    const updatedTraits = { ...props.traits, [RealmTraitType.River]: value };
+  const onRiverFilterChange = (value: number[]) => {
+    const updatedTraits = {
+      ...props.traits,
+      [RealmTraitType.River]: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedTraits);
   };
 
   const hasSelectedFilters =
-    props.traits.River > 0 ||
-    props.traits.City > 0 ||
-    props.traits.Harbor > 0 ||
-    props.traits.Region > 0;
+    props.traits.River.min > 0 ||
+    props.traits.River.max < RealmsMax.River ||
+    props.traits.City.min > 0 ||
+    props.traits.City.max < RealmsMax.City ||
+    props.traits.Harbor.min > 0 ||
+    props.traits.Harbor.max < RealmsMax.Harbour ||
+    props.traits.Region.min > 0 ||
+    props.traits.Region.max < RealmsMax.Region;
 
   return (
     <Popover className="relative">
@@ -78,29 +91,45 @@ export function TraitsFilter(props: TraitsFilterProps) {
               <RangeSliderFilter
                 name="Regions"
                 min={0}
-                max={RegionMax}
-                defaultValue={props.traits[RealmTraitType.Region]}
+                max={RealmsMax.Region}
+                values={[
+                  props.traits[RealmTraitType.Region].min,
+                  props.traits[RealmTraitType.Region].max,
+                ]}
+                defaultValues={[0, RealmsMax.Region]}
                 onChange={onRegionFilterChange}
               />
               <RangeSliderFilter
                 name="Cities"
                 min={0}
-                max={CityMax}
-                defaultValue={props.traits[RealmTraitType.City]}
+                max={RealmsMax.City}
+                values={[
+                  props.traits[RealmTraitType.City].min,
+                  props.traits[RealmTraitType.City].max,
+                ]}
+                defaultValues={[0, RealmsMax.City]}
                 onChange={onCityFilterChange}
               />
               <RangeSliderFilter
                 name="Harbours"
                 min={0}
-                max={HarbourMax}
-                defaultValue={props.traits[RealmTraitType.Harbor]}
+                max={RealmsMax.Harbour}
+                values={[
+                  props.traits[RealmTraitType.Harbor].min,
+                  props.traits[RealmTraitType.Harbor].max,
+                ]}
+                defaultValues={[0, RealmsMax.Harbour]}
                 onChange={onHarbourFilterChange}
               />
               <RangeSliderFilter
                 name="Rivers"
                 min={0}
-                max={RiverMax}
-                defaultValue={props.traits[RealmTraitType.River]}
+                max={RealmsMax.River}
+                values={[
+                  props.traits[RealmTraitType.River].min,
+                  props.traits[RealmTraitType.River].max,
+                ]}
+                defaultValues={[0, RealmsMax.River]}
                 onChange={onRiverFilterChange}
               />
             </div>

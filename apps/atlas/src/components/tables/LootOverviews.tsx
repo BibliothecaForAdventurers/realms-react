@@ -1,7 +1,7 @@
 import { Button } from '@bibliotheca-dao/ui-lib';
 import { rarityColor } from 'loot-rarity';
 import { useLootContext } from '@/context/LootContext';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import { LootItemIcon } from '@/shared/LootItemIcon';
 import type { Loot } from '@/types/index';
@@ -12,14 +12,7 @@ interface LootOverviewsProps {
 
 export function LootOverviews(props: LootOverviewsProps) {
   const { account } = useWalletContext();
-  const {
-    toggleMenuType,
-    selectedMenuType,
-    setSelectedAssetType,
-    setSelectedId,
-    gotoAssetId,
-    togglePanelType,
-  } = useUIContext();
+  const { openDetails, gotoAssetId, togglePanelType } = useAtlasContext();
   const {
     state: { favouriteLoot },
     actions,
@@ -28,23 +21,14 @@ export function LootOverviews(props: LootOverviewsProps) {
   const isYourLoot = (loot: Loot) =>
     account && account === loot.currentOwner?.address?.toLowerCase();
 
-  const openLootDetails = (id: string) => {
-    setSelectedId(id);
-    setSelectedAssetType('loot');
-
-    if (selectedMenuType !== 'loot') {
-      toggleMenuType('loot');
-    }
-  };
-
   const isFavourite = (loot: Loot) => favouriteLoot.indexOf(loot.id) > -1;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {props.bags &&
         props.bags.map((loot: Loot, index) => (
           <div key={index} className="w-full rounded">
-            <div className="w-full p-2 bg-black/70 font-display rounded-t">
+            <div className="w-full p-2 rounded-t bg-black/70 font-display">
               {[
                 loot.weapon,
                 loot.chest,
@@ -81,7 +65,7 @@ export function LootOverviews(props: LootOverviewsProps) {
                 <div className="ml-auto"></div>
               </div>
             </div>
-            <div className="rounded-b flex justify-center w-full p-2 space-x-2 bg-gray-600/70">
+            <div className="flex justify-center w-full p-2 space-x-2 rounded-b bg-gray-600/70">
               {' '}
               <Button
                 onClick={() => {
@@ -90,15 +74,15 @@ export function LootOverviews(props: LootOverviewsProps) {
                 }}
                 variant="primary"
                 size="sm"
-                className="uppercase w-full"
+                className="w-full uppercase"
               >
                 fly to
               </Button>
               <Button
-                onClick={() => openLootDetails(loot.id)}
+                onClick={() => openDetails('loot', loot.id)}
                 variant="secondary"
                 size="sm"
-                className="uppercase w-full"
+                className="w-full uppercase"
               >
                 details
               </Button>

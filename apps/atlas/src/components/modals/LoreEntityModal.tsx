@@ -1,4 +1,4 @@
-import Castle from '@bibliotheca-dao/ui-lib/icons/castle.svg';
+/* import Castle from '@bibliotheca-dao/ui-lib/icons/castle.svg';
 import { useGetLoreEntityQuery } from '@/generated/graphql';
 import { LoreScrollEntity } from '../modules/Lore/LoreScrollEntity';
 
@@ -25,4 +25,5 @@ export const LoreEntityModal = ({ entityId }) => {
   );
 };
 
-// Temporary
+// Temporary */
+export {};

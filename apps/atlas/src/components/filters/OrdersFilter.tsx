@@ -91,7 +91,11 @@ export function OrdersFilter(props: OrdersFilterProps) {
                     onClick={() => handleOnClickOrderOption(order)}
                     aria-hidden="true"
                   >
-                    <OrderIcon order={order.name.toLowerCase()} size="md" />
+                    <OrderIcon
+                      withTooltip
+                      order={order.name.toLowerCase()}
+                      size="md"
+                    />
                   </div>
                 ))}
               </div>

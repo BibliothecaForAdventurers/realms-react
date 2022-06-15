@@ -2,10 +2,12 @@ import type { Dispatch } from 'react';
 import { createContext, useContext, useReducer } from 'react';
 import type { OrderType } from '@/generated/graphql';
 import { storage } from '@/util/localStorage';
+import { LootMax } from '../constants';
+import type { MinMaxRange } from '../types';
 
 const LootFavoriteLocalStorageKey = 'loot.favourites';
 
-type RatingFilter = { bagGreatness: number; bagRating: number };
+type RatingFilter = { bagGreatness: MinMaxRange; bagRating: MinMaxRange };
 
 interface LootState {
   ratingFilter: RatingFilter;
@@ -36,8 +38,14 @@ interface LootActions {
 
 const defaultFilters = {
   ratingFilter: {
-    bagGreatness: 0,
-    bagRating: 0,
+    bagGreatness: {
+      min: 0,
+      max: LootMax.Greatness,
+    },
+    bagRating: {
+      min: 0,
+      max: LootMax.Rating,
+    },
   },
   selectedOrders: [] as OrderType[],
   searchIdFilter: '',
@@ -114,7 +122,7 @@ export function useLootContext() {
   return useContext(LootContext);
 }
 
-export function LootProvider({ children }: { children: JSX.Element }) {
+export function LootProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(lootReducer, {
     ...defaultLootState,
     favouriteLoot: storage<string[]>(LootFavoriteLocalStorageKey, []).get(),

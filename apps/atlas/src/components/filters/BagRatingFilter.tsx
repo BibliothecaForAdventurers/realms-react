@@ -2,15 +2,14 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
+import { LootMax } from '@/constants/index';
 import { useOnClickOutsideElement } from '@/hooks/useOnClickOutsideElement';
+import type { MinMaxRange } from '@/types/index';
 import { RangeSliderFilter } from './RangeSliderFilter';
 
-const GreatnessMax = 160;
-const RatingMax = 720;
-
 type BagRating = {
-  bagRating: number;
-  bagGreatness: number;
+  bagRating: MinMaxRange;
+  bagGreatness: MinMaxRange;
 };
 
 type BagRatingFilterProps = {
@@ -26,15 +25,27 @@ export function BagRatingFilter(props: BagRatingFilterProps) {
     setIsOpen(false);
   });
 
-  const onGreatnessFilterChange = (value: number) => {
-    const updatedRating = { ...props.rating, bagGreatness: value };
+  const onGreatnessFilterChange = (value: number[]) => {
+    const updatedRating = {
+      ...props.rating,
+      bagGreatness: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedRating);
   };
 
-  const onRatingFilterChange = (value: number) => {
-    const updatedRating = { ...props.rating, bagRating: value };
+  const onRatingFilterChange = (value: number[]) => {
+    const updatedRating = {
+      ...props.rating,
+      bagRating: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedRating);
   };
+
+  const hasSelectedFilters =
+    props.rating.bagRating.min > 0 ||
+    props.rating.bagRating.max < LootMax.Rating ||
+    props.rating.bagGreatness.min > 0 ||
+    props.rating.bagGreatness.max < LootMax.Greatness;
 
   return (
     <Popover className="relative">
@@ -42,11 +53,7 @@ export function BagRatingFilter(props: BagRatingFilterProps) {
         <Button
           variant="primary"
           size="sm"
-          className={clsx(
-            props.rating.bagGreatness > 0 || props.rating.bagRating > 0
-              ? 'bg-black'
-              : ''
-          )}
+          className={clsx(hasSelectedFilters ? 'bg-black' : '')}
           onClick={() => {
             setIsOpen(!isOpen);
           }}
@@ -64,15 +71,23 @@ export function BagRatingFilter(props: BagRatingFilterProps) {
               <RangeSliderFilter
                 name="Greatness"
                 min={0}
-                max={GreatnessMax}
-                defaultValue={props.rating.bagGreatness}
+                max={LootMax.Greatness}
+                defaultValues={[0, LootMax.Greatness]}
+                values={[
+                  props.rating.bagGreatness.min,
+                  props.rating.bagGreatness.max,
+                ]}
                 onChange={onGreatnessFilterChange}
               />
               <RangeSliderFilter
                 name="Rating"
                 min={0}
-                max={RatingMax}
-                defaultValue={props.rating.bagRating}
+                max={LootMax.Rating}
+                defaultValues={[0, LootMax.Rating]}
+                values={[
+                  props.rating.bagRating.min,
+                  props.rating.bagRating.max,
+                ]}
                 onChange={onRatingFilterChange}
               />
             </div>

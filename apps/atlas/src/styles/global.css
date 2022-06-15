@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-h1,
 h2,
 h3,
 h4,
@@ -12,7 +11,7 @@ h6 {
 }
 
 h1 {
-  @apply text-3xl sm:text-4xl md:text-6xl;
+  @apply text-3xl sm:text-4xl md:text-6xl font-lords;
 }
 
 h2 {
@@ -28,7 +27,7 @@ h4 {
 }
 
 button {
-  @apply font-display;
+  @apply font-body;
 }
 
 body {
@@ -106,5 +105,10 @@ html {
 }
 
 *::-webkit-scrollbar-thumb {
-  @apply bg-off-200;
+  @apply bg-stone-200;
+}
+
+@font-face {
+  font-family: Lords;
+  src: url('fontforlordsn.otf');
 }

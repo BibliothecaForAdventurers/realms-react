@@ -2,8 +2,8 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import { rarityColor } from 'loot-rarity';
 import type { ReactElement } from 'react';
 import { useState, useEffect } from 'react';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useEnsResolver } from '@/hooks/useEnsResolver';
-import { useUIContext } from '@/hooks/useUIContext';
 import getGreatness from '@/services/getGreatness';
 import { LootItemIcon } from '@/shared/LootItemIcon';
 import { MarketplaceByPanel } from '@/shared/MarketplaceByPanel';
@@ -15,7 +15,7 @@ const variantMaps: any = {
 
 export function Loot(props: LootProps): ReactElement {
   const [metaData, setMetaData] = useState(null);
-  const { gotoAssetId } = useUIContext();
+  const { gotoAssetId } = useAtlasContext();
   const ensData = useEnsResolver(props.loot.currentOwner.address);
 
   const mappedProperties = [

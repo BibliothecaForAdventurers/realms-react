@@ -10,17 +10,18 @@ import { TabProvider } from './tab-provider';
 export const VARIANTS = {
   default: {
     tab: {
-      base: ' relative inline-flex items-center px-2 sm:px-4 py-1 text-xs md:text-md font-body uppercase tracking-widest transition-all duration-150 font-semibold rounded hover:bg-black/20  hover:shadow text-gray-700',
+      base: ' relative inline-flex items-center px-2 sm:px-4 py-1 text-sm font-semibold md:text-md font-body uppercase tracking-widest transition-all duration-150  rounded hover:bg-black/10  hover:shadow text-gray-700',
       active:
         ' focus:outline-none focus:ring-2 ring-offset-2 ring-offset-blue-100 ring-white ring-opacity-20 text-white bg-black/20 shadow',
       inactive: 'text-white border-transparent',
     },
-    tabList: 'flex space-x-1 sm:space-x-2 bg-black/40 p-2 rounded mb-2 mt-4  ',
+    tabList:
+      'flex space-x-3 sm:space-x-4 bg-black/10 p-2 rounded mb-2 mt-4 shadow-inner ',
   },
   primary: {
     tab: {
-      base: 'relative flex w-full items-center justify-center px-4 py-2 font-body font-bold uppercase tracking-widest hover:bg-gray-600 hover:shadow-md transition-all duration-150 hover:text-white rounded',
-      active: 'bg-gray-600  shadow-md text-white',
+      base: 'relative flex w-full items-center justify-center px-4 py-2 font-body  uppercase tracking-widest hover:bg-gray-600 hover:shadow-md transition-all duration-150 hover:text-white rounded   hover:bg-stone-400/80 focus-visible:ring-yellow-700 border-off-200',
+      active: 'bg-stone-500  shadow-md text-white border',
       inactive: 'bg-transparent text-gray-200',
     },
     tabList: 'flex py-3 space-x-2',

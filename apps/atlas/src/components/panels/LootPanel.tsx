@@ -2,20 +2,21 @@ import { useQuery } from '@apollo/client';
 import { Tabs } from '@bibliotheca-dao/ui-lib';
 import Bag from '@bibliotheca-dao/ui-lib/icons/bag.svg';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { LootFilters } from '@/components/filters/LootFilters';
 import { LootOverviews } from '@/components/tables/LootOverviews';
 import { useLootContext } from '@/context/LootContext';
 import { getLootsQuery } from '@/hooks/graphql/queries';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import Button from '@/shared/Button';
 import type { Loot } from '@/types/index';
 import { BasePanel } from './BasePanel';
 
 export const LootPanel = () => {
-  const { isDisplayLarge, togglePanelType, selectedPanel, openDetails } =
-    useUIContext();
+  const { isDisplayLarge, selectedId, selectedPanel, openDetails } =
+    useAtlasContext();
   const { account } = useWalletContext();
   const { state, actions } = useLootContext();
 
@@ -49,8 +50,11 @@ export const LootPanel = () => {
     if (state.selectedTab === 0) {
       where.currentOwner = account?.toLowerCase();
     }
-    where.bagGreatness_gt = state.ratingFilter.bagGreatness;
-    where.bagRating_gt = state.ratingFilter.bagRating;
+    where.bagGreatness_gte = state.ratingFilter.bagGreatness.min;
+    where.bagGreatness_lte = state.ratingFilter.bagGreatness.max;
+    where.bagRating_gte = state.ratingFilter.bagRating.min;
+    where.bagRating_lte = state.ratingFilter.bagRating.max;
+
     return {
       first: limit,
       skip: limit * (page - 1),
@@ -66,7 +70,12 @@ export const LootPanel = () => {
   });
 
   useEffect(() => {
-    if (isDisplayLarge && page === 1 && (data?.bags?.length ?? 0) > 0) {
+    if (
+      !selectedId &&
+      isDisplayLarge &&
+      page === 1 &&
+      (data?.bags?.length ?? 0) > 0
+    ) {
       openDetails('loot', data?.bags[0].id as string);
     }
   }, [data, page]);
@@ -78,17 +87,16 @@ export const LootPanel = () => {
   const hasNoResults = () => !loading && (data?.bags?.length ?? 0) === 0;
 
   return (
-    <BasePanel open={isLootPanel}>
+    <BasePanel open={isLootPanel} style="lg:w-7/12">
       <div className="flex justify-between pt-2">
         <div className="sm:hidden"></div>
         <h1>Loot</h1>
 
-        <button
-          className="z-50 transition-all rounded sm:hidden top-4"
-          onClick={() => togglePanelType('loot')}
-        >
-          <Close />
-        </button>
+        <Link href="/">
+          <button className="z-50 transition-all rounded top-4">
+            <Close />
+          </button>
+        </Link>
       </div>
       <Tabs
         selectedIndex={state.selectedTab}

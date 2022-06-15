@@ -13,7 +13,7 @@ import { Spinner } from '../spinner';
 
 const STYLES = {
   icon: 'rounded-2xl bg-gray-500 border-gray-600 text-gray-200 ',
-  base: 'relative inline-flex items-center justify-center tracking-veryWide outline-none select-none border-2 text-left outline-none rounded transition duration-150 ease-in-out font-body uppercase hover:-translate-y-1 active:translate-y-1 active:shadow-inner font-semibold',
+  base: 'relative inline-flex items-center justify-center tracking-veryWide outline-none select-none border text-left outline-none rounded transition duration-150 ease-in-out uppercase hover:-translate-y-1 active:translate-y-1 active:shadow-inner font-semibold',
   active:
     'focus-visible:ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
   disabled: 'disabled:opacity-70 disabled:pointer-events-none',
@@ -34,8 +34,10 @@ const STYLES = {
   variant: {
     default:
       'text-gray-600 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 active:text-gray-900 hover:text-gray-900',
+    attack:
+      'text-red-600 bg-red-400 hover:bg-red-500 active:bg-red-300 active:text-red-900 hover:text-red-900 text-white border-red-300 hover:text-red-200',
     primary:
-      'text-white bg-off-200 hover:bg-off-200/80 focus-visible:ring-yellow-700 border-off-200 shadow-md ',
+      'text-white bg-off-200 hover:bg-stone-400/80 focus-visible:ring-yellow-700 border-off-200 shadow-md ',
     secondary:
       'bg-gray-600 text-white border-gray-600 hover:bg-gray-400 hover:text-gray-800 active:text-gray-900  active:bg-gray-200 shadow-md ',
     tertiary:

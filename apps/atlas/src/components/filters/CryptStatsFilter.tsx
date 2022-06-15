@@ -2,17 +2,15 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
+import { CryptsMax } from '@/constants/index';
 import { useOnClickOutsideElement } from '@/hooks/useOnClickOutsideElement';
+import type { MinMaxRange } from '@/types/index';
 import { RangeSliderFilter } from './RangeSliderFilter';
 
-const SizeMax = 24;
-const NumDoorsMax = 12;
-const NumPointsMax = 13;
-
 type Stats = {
-  size: number;
-  numDoors: number;
-  numPoints: number;
+  size: MinMaxRange;
+  numDoors: MinMaxRange;
+  numPoints: MinMaxRange;
 };
 
 type CryptStatsFilterProps = {
@@ -28,25 +26,37 @@ export function CryptStatsFilter(props: CryptStatsFilterProps) {
     setIsOpen(false);
   });
 
-  const onSizeFilterChange = (value: number) => {
-    const updatedStats = { ...props.stats, size: value };
+  const onSizeFilterChange = (value: number[]) => {
+    const updatedStats = {
+      ...props.stats,
+      size: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedStats);
   };
 
-  const onNumDoorsFilterChange = (value: number) => {
-    const updatedStats = { ...props.stats, numDoors: value };
+  const onNumDoorsFilterChange = (value: number[]) => {
+    const updatedStats = {
+      ...props.stats,
+      numDoors: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedStats);
   };
 
-  const onNumPointsFilterChange = (value: number) => {
-    const updatedStats = { ...props.stats, numPoints: value };
+  const onNumPointsFilterChange = (value: number[]) => {
+    const updatedStats = {
+      ...props.stats,
+      numPoints: { min: value[0], max: value[1] },
+    };
     props.onChange(updatedStats);
   };
 
   const hasSelectedFilters =
-    props.stats.numDoors > 0 ||
-    props.stats.numPoints > 0 ||
-    props.stats.size > 0;
+    props.stats.numDoors.min > 0 ||
+    props.stats.numDoors.max < CryptsMax.NumDoors ||
+    props.stats.numPoints.min > 0 ||
+    props.stats.numPoints.max < CryptsMax.NumPoints ||
+    props.stats.size.min > 0 ||
+    props.stats.size.max < CryptsMax.Size;
 
   return (
     <Popover className="relative">
@@ -72,22 +82,25 @@ export function CryptStatsFilter(props: CryptStatsFilterProps) {
               <RangeSliderFilter
                 name="Size"
                 min={0}
-                max={SizeMax}
-                defaultValue={props.stats.size}
+                max={CryptsMax.Size}
+                defaultValues={[0, CryptsMax.Size]}
+                values={[props.stats.size.min, props.stats.size.max]}
                 onChange={onSizeFilterChange}
               />
               <RangeSliderFilter
                 name="Doors"
                 min={0}
-                max={NumPointsMax}
-                defaultValue={props.stats.numPoints}
+                max={CryptsMax.NumDoors}
+                defaultValues={[0, CryptsMax.NumDoors]}
+                values={[props.stats.numDoors.min, props.stats.numDoors.max]}
                 onChange={onNumDoorsFilterChange}
               />
               <RangeSliderFilter
                 name="Points"
                 min={0}
-                max={NumDoorsMax}
-                defaultValue={props.stats.numDoors}
+                max={CryptsMax.NumPoints}
+                defaultValues={[0, CryptsMax.NumPoints]}
+                values={[props.stats.numPoints.min, props.stats.numPoints.max]}
                 onChange={onNumPointsFilterChange}
               />
             </div>

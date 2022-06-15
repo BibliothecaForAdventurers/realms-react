@@ -55,25 +55,25 @@ export function Table({ data, columns: customColumns, options }: TableProps) {
   });
 
   return (
-    <div className="p-2">
+    <div className="w-full">
       {options?.search && (
         <div>
           <input
             value={globalFilter ?? ''}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="p-2 text-gray-600 border shadow font-lg bg-gray-600/40 border-block"
-            placeholder="Search all columns..."
+            className="p-2 text-gray-600 border rounded font-lg bg-white-600/40 border-block"
+            placeholder="Search..."
           />
         </div>
       )}
-      <div className="h-2" />
-      <table className="w-full text-left text-white -striped">
-        <thead className="uppercase">
+
+      <table className="w-full text-left text-white rounded-xl">
+        <thead className="uppercase rounded-xl">
           {instance.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
-                  className="py-2 tracking-wider text-md"
+                  className="p-2 text-xs tracking-widest text-center border border-gray-500/60"
                   key={header.id}
                   colSpan={header.colSpan}
                 >
@@ -83,18 +83,21 @@ export function Table({ data, columns: customColumns, options }: TableProps) {
             </tr>
           ))}
         </thead>
-        <tbody className="shadow-lg">
+        <tbody className="shadow-inner rounded-xl">
           {instance.getRowModel().rows.map((row, index) => (
             <tr
               className={`${
                 !ArrayUtils.isEven(index + 1) && options?.is_striped
-                  ? 'bg-gray-900/70'
-                  : 'bg-gray-800/70'
-              } border-b-2 border-gray-900 hover:bg-gray-600/90`}
+                  ? 'bg-gray-600/60'
+                  : 'bg-gray-600/20'
+              } hover:bg-white-600/90 font-semibold shadow-inner`}
               key={row.id}
             >
               {row.getVisibleCells().map((cell) => (
-                <td className="px-2 py-1.5" key={cell.id}>
+                <td
+                  className="p-2 mx-auto text-left border border-gray-500/60"
+                  key={cell.id}
+                >
                   {cell.renderCell()}
                 </td>
               ))}

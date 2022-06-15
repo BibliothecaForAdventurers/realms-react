@@ -1,0 +1,17 @@
+query getTroopStats @api(name: starkIndexer) {
+  getTroopStats {
+    troopId
+    troopName
+    type
+    tier
+    agility
+    attack
+    defense
+    vitality
+    wisdom
+    troopCost {
+      amount
+      resources
+    }
+  }
+}

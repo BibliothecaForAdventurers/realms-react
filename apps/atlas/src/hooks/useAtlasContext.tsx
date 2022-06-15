@@ -16,12 +16,20 @@ import loot_bags from '../geodata/loot_bags.json';
 import realms from '../geodata/realms.json';
 export type AssetType = 'realm' | 'crypt' | 'loot' | 'ga' | undefined;
 
-export type PanelType = 'account' | 'trade' | 'bank' | 'lore' | AssetType;
+export type PanelType =
+  | 'account'
+  | 'trade'
+  | 'bank'
+  | 'lore'
+  | 'combat'
+  | AssetType;
 
 export type MenuType =
   | 'settleRealms'
   | 'bridgeRealms'
   | 'resourceSwap'
+  | 'transactionCart'
+  | 'military'
   | PanelType;
 
 export type AssetFilter = {
@@ -49,11 +57,11 @@ export const AssetFilters: AssetFilter[] = [
 ];
 
 export type ModalType = {
-  type: 'lore-entity';
+  type: 'lore-entity' | 'raid-result';
   props?: object;
 } | null;
 
-interface UI {
+interface Atlas {
   selectedId: string;
   setSelectedId: (id: string) => void;
   showDetails: boolean;
@@ -78,24 +86,10 @@ interface UI {
   setModal: (ModalType) => void;
 }
 
-const UIContext = createContext<UI>(null!);
+const AtlasContext = createContext<Atlas>(null!);
 
-interface UIProviderProps {
+interface AtlasProviderProps {
   children: React.ReactNode;
-}
-
-function useQueryPOI() {
-  const { query } = useRouter();
-  const validQueries: AssetType[] = ['realm', 'crypt', 'loot', 'ga'];
-  for (const assetType of validQueries) {
-    if (assetType && parseInt(query[assetType] as string) > 0) {
-      return {
-        assetType: assetType as string,
-        assetId: query[assetType] as string,
-      };
-    }
-  }
-  return null;
 }
 
 const assetFilterByType = (assetType: AssetType) =>
@@ -103,9 +97,11 @@ const assetFilterByType = (assetType: AssetType) =>
     (assetFilter) => assetFilter.value === assetType
   ) as AssetFilter;
 
-export const UIProvider = (props: UIProviderProps) => {
+export const AtlasProvider = (props: AtlasProviderProps) => {
   return (
-    <UIContext.Provider value={useUI()}>{props.children}</UIContext.Provider>
+    <AtlasContext.Provider value={useAtlas()}>
+      {props.children}
+    </AtlasContext.Provider>
   );
 };
 
@@ -154,13 +150,13 @@ function useCoordinates() {
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-function useUI(): UI {
+function useAtlas(): Atlas {
   const router = useRouter();
-  const query = useQueryPOI();
-  const [selectedId, setSelectedId] = useState(query ? query.assetId : '');
+  // const poiQuery = useQueryPOI();
+  const [selectedId, setSelectedId] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [selectedAssetFilter, setSelectedAssetFilter] = useState(
-    query ? assetFilterByType(query.assetType as AssetType) : AssetFilters[0]
+    AssetFilters[0]
   );
   const breakpoints: any = useBreakpoint();
 
@@ -172,35 +168,26 @@ function useUI(): UI {
     isDisplayLarge
   );
 
-  const [selectedMenuType, setMenuType] = useState<MenuType>(
-    query ? (query.assetType as AssetType) : undefined
-  );
+  const [selectedMenuType, setMenuType] = useState<MenuType>(undefined);
   const [selectedPanel, setPanelType] = useState<PanelType>(undefined);
-
   const { coordinates, updateCoordinatesByAsset } = useCoordinates();
-
   const [selectedModal, setSelectedModal] = useState<ModalType>(null);
 
-  // Update URL
-  // useEffect(() => {
-  //   if (!selectedId) {
-  //     return;
-  //   }
-  //   const path = selectedId
-  //     ? `?${selectedAssetFilter.value}=${selectedId}`
-  //     : '/';
-
-  //   router.push(path, undefined, {
-  //     shallow: true,
-  //   });
-  // }, [selectedId, selectedAssetFilter]);
-
-  // Sync AssetFilter with Menu
   useEffect(() => {
-    if (selectedAssetFilter.value !== selectedMenuType) {
-      setMenuType(selectedAssetFilter.value);
+    const panel = router.query.segment && router.query.segment[0];
+    const id = router.query?.id as string;
+
+    if (selectedPanel !== panel) {
+      setShowDetails(true);
+      togglePanelType((panel || selectedPanel) as PanelType);
     }
-  }, [selectedAssetFilter]);
+
+    if (id) {
+      setShowDetails(true);
+      setSelectedAssetFilter(assetFilterByType(panel as AssetType));
+      setSelectedId(id);
+    }
+  }, [router.query]);
 
   const closeAll = (exclude?: MenuType) => {
     if (!exclude) {
@@ -224,6 +211,7 @@ function useUI(): UI {
     }
   };
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const togglePanelType = (panelType: PanelType) => {
     setMainMenu(false);
     if (selectedPanel === panelType) {
@@ -242,7 +230,7 @@ function useUI(): UI {
         if (breakpoints.lg) {
           openDetails('resourceSwap', '1');
         }
-      } else if (panelType === 'trade') {
+      } else if (panelType === 'trade' || panelType === 'combat') {
         setArtBackground('realm');
         if (breakpoints.lg) {
           setMenuType(panelType);
@@ -262,9 +250,23 @@ function useUI(): UI {
   };
 
   const openDetails = (menuType: MenuType, assetId: string) => {
-    setShowDetails(true);
-    setMenuType(menuType);
-    setSelectedId(assetId);
+    let panel = menuType;
+    switch (panel) {
+      case 'settleRealms':
+      case 'bridgeRealms':
+        panel = 'realm';
+        break;
+      case 'resourceSwap':
+        panel = 'bank';
+        break;
+      case 'military':
+        break;
+      case 'transactionCart':
+    }
+
+    router.push(`/${panel}?id=${assetId}`, undefined, {
+      shallow: true,
+    });
   };
 
   const setSelectedAssetType = (assetType: AssetType) =>
@@ -316,6 +318,6 @@ function useUI(): UI {
   };
 }
 
-export function useUIContext() {
-  return useContext(UIContext);
+export function useAtlasContext() {
+  return useContext(AtlasContext);
 }

@@ -317,7 +317,7 @@ export function useJourneyContext() {
   return useContext(JourneyContext);
 }
 
-export function JourneyProvider({ children }: { children: JSX.Element }) {
+export function JourneyProvider({ children }: { children: React.ReactNode }) {
   const { signer, account, provider, network } = useWalletContext();
   const [state, dispatch] = useReducer(journeyReducer, {
     ...defaultJourneyState,

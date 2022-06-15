@@ -1,5 +1,4 @@
 /* eslint-disable react/jsx-key */
-
 import {
   Anger,
   Brilliance,
@@ -24,7 +23,12 @@ import type { LDKSchema } from './lib';
 
 const LoreLink = (props: { children: any; href: string }) => (
   <>
-    <a href={props.href} className="underline hover:text-gray-400">
+    <a
+      target={'_blank'}
+      rel="noreferrer nofollow"
+      href={props.href}
+      className="underline hover:text-gray-400"
+    >
       {props.children}
     </a>
   </>

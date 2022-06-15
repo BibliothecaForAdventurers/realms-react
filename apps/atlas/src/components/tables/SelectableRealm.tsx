@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { RealmFragmentFragment } from '@/generated/graphql';
+import { RealmStatus } from '@/shared/Getters/Realm';
 
 type SelectableRealmProps = {
   realm: RealmFragmentFragment;
@@ -35,7 +36,7 @@ export function SelectableRealm(props: SelectableRealmProps) {
           {realm.name}
         </h3>
         <h4 className="self-center justify-end hidden p-1 px-4 text-xs text-gray-400 rounded sm:block">
-          Location: L1 (Ethereum MainNet)
+          {RealmStatus(realm)}
         </h4>
       </div>
     </button>

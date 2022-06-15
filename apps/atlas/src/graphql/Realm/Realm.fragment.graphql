@@ -9,8 +9,10 @@ fragment RealmFragment on Realm {
   rarityScore
   orderType
   wonder
+  lastAttacked
   resources {
     resourceId
+    resourceName
     level
     upgrades
   }
@@ -20,6 +22,14 @@ fragment RealmFragment on Realm {
   }
   buildings {
     buildingId
+    buildingName
+    count
+    buildingName
+    population
+    culture
+    food
+    limitTraitId
+    limitTraitName
   }
   squad {
     realmId

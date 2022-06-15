@@ -3,7 +3,7 @@ import Right from '@bibliotheca-dao/ui-lib/icons/chevron-right.svg';
 import Menu from '@bibliotheca-dao/ui-lib/icons/menu.svg';
 import type { MouseEventHandler } from 'react';
 import { useState } from 'react';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { resources } from '@/util/resources';
 import { BaseSideBar } from './BaseSideBar';
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const ResourceSideBar = (props: Props) => {
-  const { toggleMenuType, selectedMenuType } = useUIContext();
+  const { toggleMenuType, selectedMenuType } = useAtlasContext();
   const [focusResource, setResource] = useState<number>(0);
   const [loaded, setLoaded] = useState<boolean>(false);
   const list = resources.map((res: any, index) => (

@@ -2,20 +2,22 @@ import { Tabs } from '@bibliotheca-dao/ui-lib';
 import Castle from '@bibliotheca-dao/ui-lib/icons/castle.svg';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import { useStarknet } from '@starknet-react/core';
+import { BigNumber } from 'ethers';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { RealmsFilter } from '@/components/filters/RealmsFilter';
 import { RealmOverviews } from '@/components/tables/RealmOverviews';
 import { useRealmContext } from '@/context/RealmContext';
 import type { RealmTraitType } from '@/generated/graphql';
 import { useGetRealmsQuery } from '@/generated/graphql';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import Button from '@/shared/Button';
 import { BasePanel } from './BasePanel';
 
 export const RealmsPanel = () => {
-  const { isDisplayLarge, togglePanelType, selectedPanel, openDetails } =
-    useUIContext();
+  const { isDisplayLarge, selectedId, selectedPanel, openDetails } =
+    useAtlasContext();
   const { account } = useWalletContext();
   const { account: starkAccount } = useStarknet();
   const { state, actions } = useRealmContext();
@@ -25,6 +27,10 @@ export const RealmsPanel = () => {
   const previousPage = () => setPage(page - 1);
   const nextPage = () => setPage(page + 1);
 
+  const starknetWallet = starkAccount
+    ? BigNumber.from(starkAccount).toHexString()
+    : '';
+
   // Reset page on filter change. UseEffect doesn't do a deep compare
   useEffect(() => {
     setPage(1);
@@ -33,8 +39,8 @@ export const RealmsPanel = () => {
     state.selectedOrders,
     state.searchIdFilter,
     state.hasWonderFilter,
-    state.rarityFilter.rarityRank,
-    state.rarityFilter.rarityScore,
+    state.rarityFilter.rank,
+    state.rarityFilter.score,
     state.traitsFilter.City,
     state.traitsFilter.Harbor,
     state.traitsFilter.Region,
@@ -52,12 +58,15 @@ export const RealmsPanel = () => {
 
     const traitsFilters = Object.keys(state.traitsFilter)
       // Filter 0 entries
-      .filter((key: string) => (state.traitsFilter as any)[key])
+      .filter((key: string) => state.traitsFilter[key])
       .map((key: string) => ({
         traits: {
           some: {
             type: { equals: key as RealmTraitType },
-            qty: { gte: (state.traitsFilter as any)[key] },
+            qty: {
+              gte: state.traitsFilter[key].min,
+              lte: state.traitsFilter[key].max,
+            },
           },
         },
       }));
@@ -73,8 +82,8 @@ export const RealmsPanel = () => {
       filter.OR = [
         { owner: { equals: account?.toLowerCase() } },
         { bridgedOwner: { equals: account?.toLowerCase() } },
-        { ownerL2: { equals: starkAccount?.toLowerCase() } },
-        { settledOwner: { equals: starkAccount?.toLowerCase() } },
+        { ownerL2: { equals: starknetWallet } },
+        { settledOwner: { equals: starknetWallet } },
       ];
     }
 
@@ -84,8 +93,20 @@ export const RealmsPanel = () => {
       };
     }
 
-    filter.rarityRank = { gte: state.rarityFilter.rarityRank };
-    filter.rarityScore = { gte: state.rarityFilter.rarityScore };
+    if (state.isSettledFilter) {
+      filter.NOT = {
+        settledOwner: { equals: null },
+      };
+    }
+
+    filter.rarityRank = {
+      gte: state.rarityFilter.rank.min,
+      lte: state.rarityFilter.rank.max,
+    };
+    filter.rarityScore = {
+      gte: state.rarityFilter.score.min,
+      lte: state.rarityFilter.score.max,
+    };
     filter.orderType =
       state.selectedOrders.length > 0
         ? { in: [...state.selectedOrders] }
@@ -105,10 +126,15 @@ export const RealmsPanel = () => {
   });
 
   useEffect(() => {
-    if (isDisplayLarge && page === 1 && (data?.getRealms?.length ?? 0) > 0) {
+    if (
+      !selectedId &&
+      isDisplayLarge &&
+      page === 1 &&
+      (data?.getRealms?.length ?? 0) > 0
+    ) {
       openDetails('realm', data?.getRealms[0].realmId + '');
     }
-  }, [data, page]);
+  }, [data, page, selectedId]);
 
   const showPagination = () =>
     state.selectedTab === 1 &&
@@ -117,17 +143,15 @@ export const RealmsPanel = () => {
   const hasNoResults = () => !loading && (data?.getRealms?.length ?? 0) === 0;
 
   return (
-    <BasePanel open={isRealmPanel}>
+    <BasePanel open={isRealmPanel} style="lg:w-7/12">
       <div className="flex justify-between pt-2">
         <div className="sm:hidden"></div>
         <h1>Realms</h1>
-
-        <button
-          className="z-50 transition-all rounded sm:hidden top-4"
-          onClick={() => togglePanelType('realm')}
-        >
-          <Close />
-        </button>
+        <Link href="/">
+          <button className="z-50 transition-all rounded top-4">
+            <Close />
+          </button>
+        </Link>
       </div>
       <Tabs
         selectedIndex={state.selectedTab}

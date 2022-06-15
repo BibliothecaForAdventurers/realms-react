@@ -6,7 +6,7 @@ import { ResourcesFilter } from '@/components/filters/ResourcesFilter';
 import { SearchFilter } from '@/components/filters/SearchFilter';
 import { TraitsFilter } from '@/components/filters/TraitsFilter';
 import { useRealmContext } from '@/context/RealmContext';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 
 type RealmsFilterProps = {
   isYourRealms: boolean;
@@ -28,6 +28,16 @@ export function RealmsFilter(props: RealmsFilterProps) {
           />
         </div>
         <div className="flex flex-wrap self-center gap-2 md:flex-nowrap">
+          <div>
+            <Button
+              variant="primary"
+              size="sm"
+              className={clsx('', state.isSettledFilter ? 'bg-black' : '')}
+              onClick={actions.toggleIsSettledFilter}
+            >
+              Settled
+            </Button>
+          </div>
           <div>
             <Button
               variant="primary"

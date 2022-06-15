@@ -432,6 +432,27 @@
   {
     "inputs": [
       {
+        "name": "token_id",
+        "type": "Uint256"
+      }
+    ],
+    "name": "get_all_vault_raidable",
+    "outputs": [
+      {
+        "name": "user_mint_len",
+        "type": "felt"
+      },
+      {
+        "name": "user_mint",
+        "type": "Uint256*"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "name": "resource_id",
         "type": "felt"
       },

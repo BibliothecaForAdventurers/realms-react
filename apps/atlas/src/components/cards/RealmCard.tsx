@@ -1,29 +1,28 @@
-import { OrderIcon, Tabs, ResourceIcon } from '@bibliotheca-dao/ui-lib';
+import { OrderIcon, Tabs, ResourceIcon, Button } from '@bibliotheca-dao/ui-lib';
 import Image from 'next/image';
 import type { ReactElement } from 'react';
 import React, { useMemo } from 'react';
+import { number } from 'starknet';
 import { RealmBuildings } from '@/components/tables/RealmBuildings';
 import { RealmHistory } from '@/components/tables/RealmHistory';
 import { RealmResources } from '@/components/tables/RealmResources';
 import { RealmTroops } from '@/components/tables/RealmTroops';
 import type { RealmFragmentFragment } from '@/generated/graphql';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useEnsResolver } from '@/hooks/useEnsResolver';
-import { useUIContext } from '@/hooks/useUIContext';
 import { DownloadAssets } from '@/shared/DownloadAssets';
+import { RealmStatus, TraitTable } from '@/shared/Getters/Realm';
 import { MarketplaceByPanel } from '@/shared/MarketplaceByPanel';
 import { findResourceName } from '@/util/resources';
 import { Realm } from '../../types';
 import type { RealmsCardProps } from '../../types';
 
-type OverviewProps = {
-  test: string;
-};
 const variantMaps: any = {
   small: { heading: 'lg:text-4xl', regions: 'lg:text-xl' },
 };
 
 function Overview(props: RealmsCardProps): ReactElement {
-  const { gotoAssetId } = useUIContext();
+  const { gotoAssetId } = useAtlasContext();
   const regions = props.realm.traits?.find((o) => o.type === 'Region');
   const cities = props.realm.traits?.find((o) => o.type === 'City');
   const rivers = props.realm.traits?.find((o) => o.type === 'River');
@@ -31,7 +30,7 @@ function Overview(props: RealmsCardProps): ReactElement {
 
   return (
     <div>
-      <div className="p-2">
+      {/* <div>
         <div className="flex justify-between">
           {!props.realm?.owner && (
             <div>
@@ -48,8 +47,8 @@ function Overview(props: RealmsCardProps): ReactElement {
             </div>
           )}
         </div>
-      </div>
-      <div className="flex flex-wrap mb-2 font-semibold tracking-widest uppercase">
+      </div> */}
+      <div className="flex flex-wrap mb-2 tracking-widest uppercase">
         {props.realm.resources?.map((re, index) => (
           <div key={index} className="flex mb-4 mr-4 text-xl">
             <ResourceIcon
@@ -72,53 +71,10 @@ function Overview(props: RealmsCardProps): ReactElement {
           (props.size ? variantMaps[props.size]?.regions : '')
         }
       >
-        <div>
-          <span>
-            Regions:
-            {regions?.qty} / 7
-          </span>
-          <div className="w-full my-2 bg-gray-200 rounded">
-            <div
-              className="h-2 bg-amber-700/60 rounded-xl"
-              style={{
-                width: `${((regions?.qty as number) / 7) * 100}%`,
-              }}
-            ></div>
-          </div>
-        </div>
-        <div>
-          <span className="pt-1">Cities: {cities?.qty} / 21</span>
-          <div className="w-full my-2 bg-gray-200 rounded">
-            <div
-              className="h-2 bg-amber-300/60"
-              style={{
-                width: `${((cities?.qty as any) / 21) * 100}%`,
-              }}
-            ></div>
-          </div>
-        </div>
-        <div>
-          <span className="pt-1">Harbors: {harbors?.qty} / 35</span>
-          <div className="w-full my-2 bg-gray-200 rounded">
-            <div
-              className="h-2 bg-blue-700/60"
-              style={{
-                width: `${((harbors?.qty as any) / 35) * 100}%`,
-              }}
-            ></div>
-          </div>
-        </div>
-        <div>
-          <span className="pt-1">Rivers: {rivers?.qty} / 60</span>
-          <div className="w-full my-2 bg-gray-200 rounded">
-            <div
-              className="h-2 bg-blue-500/60 "
-              style={{
-                width: `${((rivers?.qty as any) / 60) * 100}%`,
-              }}
-            ></div>
-          </div>
-        </div>
+        <TraitTable trait="Region" traitAmount={regions?.qty} />
+        <TraitTable trait="City" traitAmount={cities?.qty} />
+        <TraitTable trait="Harbor" traitAmount={harbors?.qty} />
+        <TraitTable trait="River" traitAmount={rivers?.qty} />
       </div>
       <MarketplaceByPanel
         id={props.realm.realmId.toString()}
@@ -138,22 +94,22 @@ export function RealmCard(props: RealmsCardProps): ReactElement {
         label: 'Overview',
         component: <Overview {...props} />,
       },
-      /* {
+      {
         label: 'Resources',
         component: <RealmResources {...props} />,
       },
-      {
-        label: 'Troops',
-        component: <RealmTroops />,
-      },
-      {
-        label: 'Buildings',
-        component: <RealmBuildings {...props} />,
-      },
+      // {
+      //   label: 'Troops',
+      //   component: <RealmTroops />,
+      // },
+      // {
+      //   label: 'Buildings',
+      //   component: <RealmBuildings {...props} />,
+      // },
       {
         label: 'History',
-        component: <RealmHistory />,
-      }, */
+        component: <RealmHistory realmId={props.realm.realmId} />,
+      },
     ],
     [props.realm?.realmId]
   );
@@ -182,9 +138,7 @@ export function RealmCard(props: RealmsCardProps): ReactElement {
               layout={'responsive'}
             />
           </div>
-          {/* <p className="text-lg font-semibold text-gray-400">
-            {props.realm.id}
-          </p> */}
+          {RealmStatus(props.realm)}
           <div className="flex">
             <OrderIcon size="md" order={props.realm.orderType.toLowerCase()} />
             <h2
@@ -201,19 +155,7 @@ export function RealmCard(props: RealmsCardProps): ReactElement {
               </h3>
             )}
           </div>
-          <div className="flex flex-col justify-between my-4 rounded sm:flex-row">
-            <h4>
-              Id: <span className="font-semibold">{props.realm.realmId}</span>
-            </h4>
-            <h4>
-              Rank:
-              <span className="font-semibold">{props.realm.rarityRank}</span>
-            </h4>
-            <h4>
-              Score:
-              <span className="font-semibold">{props.realm.rarityScore}</span>
-            </h4>
-          </div>
+
           <Tabs variant="primary">
             <Tabs.List className="">
               {tabs.map((tab) => (
@@ -222,11 +164,26 @@ export function RealmCard(props: RealmsCardProps): ReactElement {
                 </Tabs.Tab>
               ))}
             </Tabs.List>
-            <Tabs.Panels>
-              {tabs.map((tab) => (
-                <Tabs.Panel key={tab.label}>{tab.component}</Tabs.Panel>
-              ))}
-            </Tabs.Panels>
+            <div className="flex flex-col justify-between px-4 py-2 mb-2 uppercase rounded shadow-inner sm:flex-row bg-black/20">
+              <span>
+                Id:<span className="">{props.realm.realmId}</span>
+              </span>
+              <span>
+                Rank:
+                <span className="">{props.realm.rarityRank}</span>
+              </span>
+              <span>
+                Score:
+                <span className="">{props.realm.rarityScore}</span>
+              </span>
+            </div>
+            <div className="px-5 pb-5 rounded shadow-inner bg-black/10">
+              <Tabs.Panels>
+                {tabs.map((tab) => (
+                  <Tabs.Panel key={tab.label}>{tab.component}</Tabs.Panel>
+                ))}
+              </Tabs.Panels>
+            </div>
           </Tabs>
         </div>
       )}

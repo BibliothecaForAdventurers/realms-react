@@ -3,19 +3,17 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import Bag from '@bibliotheca-dao/ui-lib/icons/bag.svg';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import { getLootQuery } from '@/hooks/graphql/queries';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import type { LootData } from '@/types/index';
 import { Loot } from '../cards/Loot';
 import { BaseSideBar } from './BaseSideBar';
-type Props = {
-  id: string;
-};
 
-export const LootSideBar = (props: Props) => {
-  const { toggleMenuType, selectedMenuType, showDetails } = useUIContext();
+export const LootSideBar = () => {
+  const { toggleMenuType, selectedMenuType, showDetails, selectedId } =
+    useAtlasContext();
   const isLootSelected = selectedMenuType === 'loot' && showDetails;
   const { loading, error, data } = useQuery<LootData>(getLootQuery, {
-    variables: { id: props.id.toString() },
+    variables: { id: selectedId.toString() },
     skip: !isLootSelected,
   });
 

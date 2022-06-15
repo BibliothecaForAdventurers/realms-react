@@ -2,10 +2,12 @@ import type { Dispatch } from 'react';
 import { createContext, useContext, useReducer } from 'react';
 import type { OrderType } from '@/generated/graphql';
 import { storage } from '@/util/localStorage';
+import { LootMax } from '../constants';
+import type { MinMaxRange } from '../types';
 
 const GAFavoriteLocalStorageKey = 'ga.favourites';
 
-type RatingFilter = { bagGreatness: number; bagRating: number };
+type RatingFilter = { bagGreatness: MinMaxRange; bagRating: MinMaxRange };
 
 interface GaState {
   ratingFilter: RatingFilter;
@@ -36,8 +38,8 @@ interface GaActions {
 
 const defaultFilters = {
   ratingFilter: {
-    bagGreatness: 0,
-    bagRating: 0,
+    bagGreatness: { min: 0, max: LootMax.Greatness },
+    bagRating: { min: 0, max: LootMax.Rating },
   },
   selectedOrders: [] as OrderType[],
   searchIdFilter: '',
@@ -115,7 +117,7 @@ export function useGaContext() {
   return useContext(GaContext);
 }
 
-export function GaProvider({ children }: { children: JSX.Element }) {
+export function GaProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gaReducer, {
     ...defaultGaState,
     favouriteGa: storage<string[]>(GAFavoriteLocalStorageKey, []).get(),

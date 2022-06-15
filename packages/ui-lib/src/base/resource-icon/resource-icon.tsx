@@ -86,7 +86,7 @@ const STYLES = {
 
 export const ResourceIcon = (props: Props) => {
   return (
-    <div className={`flex flex-col`}>
+    <div className={`flex`}>
       <span className={`${twMerge(STYLES.size[props.size], props.className)} `}>
         {
           Components[props.resource.replace(' ', '').replace("'", '')]

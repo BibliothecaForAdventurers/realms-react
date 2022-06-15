@@ -1,7 +1,7 @@
 import { Button, OrderIcon } from '@bibliotheca-dao/ui-lib';
 import { rarityColor } from 'loot-rarity';
 import { useGaContext } from '@/context/GaContext';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import { LootItemIcon } from '@/shared/LootItemIcon';
 import type { GAdventurer } from '@/types/index';
@@ -19,7 +19,7 @@ export function GaOverviews(props: GaOverviewsProps) {
     setSelectedAssetType,
     gotoAssetId,
     togglePanelType,
-  } = useUIContext();
+  } = useAtlasContext();
   const {
     state: { favouriteGa },
     actions,

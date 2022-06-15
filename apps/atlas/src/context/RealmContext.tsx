@@ -1,18 +1,22 @@
 import type { Dispatch } from 'react';
 import { createContext, useContext, useReducer } from 'react';
+import { RealmsMax } from '@/constants/index';
 import type { OrderType } from '@/generated/graphql';
 import { RealmTraitType } from '@/generated/graphql';
 import { storage } from '@/util/localStorage';
-
+import type { MinMaxRange } from '../types';
 const RealmFavoriteLocalStorageKey = 'realm.favourites';
 
-type RarityFilter = { rarityScore: number; rarityRank: number };
+type RarityFilter = {
+  score: MinMaxRange;
+  rank: MinMaxRange;
+};
 
 type TraitsFilter = {
-  [RealmTraitType.Region]: number;
-  [RealmTraitType.City]: number;
-  [RealmTraitType.Harbor]: number;
-  [RealmTraitType.River]: number;
+  [RealmTraitType.Region]: MinMaxRange;
+  [RealmTraitType.City]: MinMaxRange;
+  [RealmTraitType.Harbor]: MinMaxRange;
+  [RealmTraitType.River]: MinMaxRange;
 };
 
 interface RealmState {
@@ -24,6 +28,7 @@ interface RealmState {
   searchIdFilter: string;
   selectedTab: number;
   hasWonderFilter: boolean;
+  isSettledFilter: boolean;
   selectedRealms: number[];
 }
 
@@ -33,6 +38,7 @@ type RealmAction =
   | { type: 'updateSelectedOrders'; payload: OrderType[] }
   | { type: 'updateSelectedResources'; payload: number[] }
   | { type: 'toggleHasWonderFilter' }
+  | { type: 'toggleIsSettledFilter' }
   | { type: 'clearFilfters' }
   | { type: 'addFavouriteRealm'; payload: number }
   | { type: 'removeFavouriteRealm'; payload: number }
@@ -47,6 +53,7 @@ interface RealmActions {
   updateSelectedOrders(orders: OrderType[]): void;
   updateSelectedResources(resources: number[]): void;
   toggleHasWonderFilter(): void;
+  toggleIsSettledFilter(): void;
   clearFilters(): void;
   addFavouriteRealm(realmId: number): void;
   removeFavouriteRealm(realmId: number): void;
@@ -58,19 +65,26 @@ interface RealmActions {
 
 const defaultFilters = {
   rarityFilter: {
-    rarityScore: 0,
-    rarityRank: 0,
+    score: {
+      min: 0,
+      max: RealmsMax.Score,
+    },
+    rank: {
+      min: 0,
+      max: RealmsMax.Rank,
+    },
   },
   traitsFilter: {
-    [RealmTraitType.Region]: 0,
-    [RealmTraitType.City]: 0,
-    [RealmTraitType.Harbor]: 0,
-    [RealmTraitType.River]: 0,
+    [RealmTraitType.Region]: { min: 0, max: RealmsMax.Region },
+    [RealmTraitType.City]: { min: 0, max: RealmsMax.City },
+    [RealmTraitType.Harbor]: { min: 0, max: RealmsMax.Harbour },
+    [RealmTraitType.River]: { min: 0, max: RealmsMax.River },
   },
   selectedOrders: [] as OrderType[],
   selectedResources: [] as number[],
   searchIdFilter: '',
   hasWonderFilter: false,
+  isSettledFilter: false,
 };
 
 const defaultRealmState = {
@@ -92,6 +106,8 @@ function realmReducer(state: RealmState, action: RealmAction): RealmState {
       return { ...state, selectedTab: action.payload };
     case 'toggleHasWonderFilter':
       return { ...state, hasWonderFilter: !state.hasWonderFilter };
+    case 'toggleIsSettledFilter':
+      return { ...state, isSettledFilter: !state.isSettledFilter };
     case 'updateSelectedOrders':
       return { ...state, selectedOrders: [...action.payload] };
     case 'updateSelectedResources':
@@ -149,6 +165,7 @@ const mapActions = (dispatch: Dispatch<RealmAction>): RealmActions => ({
   updateSelectedTab: (tab: number) =>
     dispatch({ type: 'updateSelectedTab', payload: tab }),
   toggleHasWonderFilter: () => dispatch({ type: 'toggleHasWonderFilter' }),
+  toggleIsSettledFilter: () => dispatch({ type: 'toggleIsSettledFilter' }),
   updateTraitsFilter: (filter: TraitsFilter) =>
     dispatch({ type: 'updateTraitsFilter', payload: filter }),
   updateSelectedOrders: (orders: OrderType[]) =>
@@ -176,7 +193,7 @@ export function useRealmContext() {
   return useContext(RealmContext);
 }
 
-export function RealmProvider({ children }: { children: JSX.Element }) {
+export function RealmProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(realmReducer, {
     ...defaultRealmState,
     favouriteRealms: storage<number[]>(RealmFavoriteLocalStorageKey, []).get(),

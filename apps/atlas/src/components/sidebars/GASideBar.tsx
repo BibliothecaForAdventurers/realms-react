@@ -3,14 +3,14 @@ import { Button } from '@bibliotheca-dao/ui-lib';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import Helm from '@bibliotheca-dao/ui-lib/icons/helm.svg';
 import { getGAQuery } from '@/hooks/graphql/queries';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import type { GAData } from '@/types/index';
 import { GAdventurer } from '../cards/GAdventurer';
 import { BaseSideBar } from './BaseSideBar';
 
 export const GASideBar = () => {
   const { toggleMenuType, selectedMenuType, showDetails, selectedId } =
-    useUIContext();
+    useAtlasContext();
   const isGASelected = selectedMenuType === 'ga' && showDetails;
   const { loading, error, data } = useQuery<GAData>(getGAQuery, {
     variables: { id: selectedId },

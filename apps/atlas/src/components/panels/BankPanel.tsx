@@ -1,42 +1,72 @@
 import { Table, Button, ResourceIcon } from '@bibliotheca-dao/ui-lib';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
+import { formatEther } from '@ethersproject/units';
+import Link from 'next/link';
 import type { ReactElement } from 'react';
 import { useResourcesContext } from '@/context/ResourcesContext';
 import { useGetRealmQuery } from '@/generated/graphql';
-import { useUIContext } from '@/hooks/useUIContext';
-import { resources, findResourceName } from '@/util/resources';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { BasePanel } from './BasePanel';
 
 type Row = {
   resource: ReactElement;
-  balance: number;
+  balance: string;
   output: number;
-  change: number;
-  rate: number;
+  change: ReactElement;
+  rate: string;
   action: ReactElement;
 };
 
+export const RateChange = (change: number) => {
+  const x = (change * 100).toFixed(2);
+  return (
+    <span
+      className={`${parseInt(x) < 0 ? 'text-red-300' : 'text-green-300/80'}`}
+    >
+      + {x} %
+    </span>
+  );
+};
+
 export function BankPanel(): ReactElement {
-  const { togglePanelType, selectedPanel } = useUIContext();
-  const { balance, updateBalance } = useResourcesContext();
+  const { selectedPanel } = useAtlasContext();
+  const {
+    lordsBalance,
+    balance,
+    availableResourceIds,
+    addSelectedSwapResources,
+  } = useResourcesContext();
+
   const defaultData: Row[] = balance?.map((resource) => {
-    const resourceModel = findResourceName(resource.resourceId);
     return {
       resource: (
-        <div className="flex mb-4 mr-4 text-xl">
+        <div className="flex mr-4">
           <ResourceIcon
-            resource={resourceModel?.trait.replace(' ', '') || ''}
-            size="md"
+            resource={resource?.resourceName?.replace(' ', '') || ''}
+            size="sm"
           />
 
-          <span className="self-center ml-4">{resourceModel?.trait}</span>
+          <span className="self-center ml-4 tracking-widest uppercase">
+            {resource?.resourceName}
+          </span>
         </div>
       ),
-      balance: resource.amount,
+      balance: (+formatEther(resource.amount)).toFixed(),
       output: 0,
-      change: 0.08,
-      rate: 0,
-      action: <Button>Trade</Button>,
+      change: RateChange(resource.percentChange),
+      rate: (+formatEther(resource.rate)).toFixed(4),
+      action: (
+        <Button
+          variant="secondary"
+          size="xs"
+          onClick={() => {
+            addSelectedSwapResources(resource.resourceId);
+          }}
+          disabled={!availableResourceIds.includes(resource.resourceId)}
+        >
+          Trade
+        </Button>
+      ),
     };
   });
   const columns = [
@@ -54,27 +84,21 @@ export function BankPanel(): ReactElement {
     },
   });
   return (
-    <BasePanel open={selectedPanel === 'bank'}>
+    <BasePanel open={selectedPanel === 'bank'} style="lg:w-7/12">
       <div className="flex justify-between">
         <div className="sm:hidden"></div>
-        <h1 className="tex">Iron Bank</h1>
-        <button
-          className="mb-8 transition-all rounded "
-          onClick={() => togglePanelType('bank')}
-        >
-          <Close />
-        </button>
+        <div className="w-full">
+          <h1 className="w-full text-center font-lords">Iron Bank</h1>
+          <h4 className="p-2 my-4 text-center rounded shadow-inner bg-white/20">
+            Your Lords Balance: {(+formatEther(lordsBalance)).toFixed(2)}
+          </h4>
+        </div>
       </div>
 
       <div className="relative overflow-x-auto">
         {data && (
           <Table columns={columns} data={defaultData} options={tableOptions} />
         )}
-        <div className="absolute inset-0 backdrop-blur firefox:bg-opacity-90 firefox:bg-gray-300">
-          <div className="grid h-full text-4xl font-bold text-center uppercase place-items-center text">
-            Coming Soon!
-          </div>
-        </div>
       </div>
     </BasePanel>
   );

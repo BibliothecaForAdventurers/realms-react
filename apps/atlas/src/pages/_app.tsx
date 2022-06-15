@@ -1,6 +1,10 @@
 import { ApolloProvider } from '@apollo/client';
 import { UserAgentProvider } from '@quentin-sommer/react-useragent';
-import { StarknetProvider, InjectedConnector } from '@starknet-react/core';
+import {
+  StarknetProvider,
+  useStarknet,
+  InjectedConnector,
+} from '@starknet-react/core';
 import type { AppProps } from 'next/app';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -52,7 +56,6 @@ const queries = {
 
 function MyApp({ Component, pageProps }: AppProps) {
   const connectors = [new InjectedConnector()];
-
   return (
     <BreakpointProvider queries={queries}>
       <WalletProvider>

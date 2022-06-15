@@ -148,7 +148,7 @@ const nextConfig = {
   },
 
   webpack: (config, { webpack, isServer }) => {
-    if (isServer) {
+    if (!isServer) {
       config.resolve.fallback = { ...config.resolve.fallback, fs: false };
     }
 

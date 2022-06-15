@@ -1,0 +1,17 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<g id="dp_dp001" transform="matrix(1,0,0,1,-560.833,-144.081)">
+		<path id="dp_path002" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 587.761,152.084 L 608.845,162.783 L 604.428,183.369 L 584.772,187.888 L 572.827,170.439 Z "/>
+		<path id="dp_path003" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 610.635,162.783 L 607.269,183.369 L 618.285,194.467 L 625.975,180.963 L 621.347,161.405 Z "/>
+		<path id="dp_path004" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 610.388,160.864 L 620.32,159.749 L 608.845,148.873 L 589.947,144.884 L 588.987,150.004 Z "/>
+		<path id="dp_path005" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 586.757,150.337 L 587.76,145.572 L 571.427,156.704 L 562.212,170.437 L 570.791,169.333 Z "/>
+		<path id="dp_path006" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 570.969,171.705 L 561.715,172.895 L 565.885,192.919 L 577.268,203.319 L 582.913,188.94 Z "/>
+		<path id="dp_path007" fill="#56330f" fill-rule="evenodd" stroke="#56330f" stroke-width="1.33333" d="M 585.317,189.605 L 578.995,204.884 L 599.745,209.528 L 616.913,196.431 L 606.015,184.993 Z "/>
+	</g>
+	<text id="dp_text001" transform="matrix(0.97982,-0.199881,0.199881,0.97982,23.4542,35.8512)" xml:space="preserve" fill="white" font-family="Arial" font-size="21" font-weight="400" x="0" y="0">I2</text>
+	<text id="dp_text002" transform="matrix(-1.50223,0.585999,-0.363414,-0.931628,39.545,47.7381)" xml:space="preserve" fill="white" font-family="Arial" font-size="14" font-weight="400" x="0" y="0">8</text>
+	<text id="dp_text003" transform="matrix(-0.360341,1.57081,-0.974683,-0.22359,52.8558,22.5437)" xml:space="preserve" fill="white" font-family="Arial" font-size="14" font-weight="400" x="0" y="0">I0</text>
+	<text id="dp_text004" transform="matrix(-0.975109,-2.04252,0.902435,-0.430826,14.8837,46.1949)" xml:space="preserve" fill="white" font-family="Arial" font-size="9" font-weight="400" x="0" y="0">7</text>
+	<text id="dp_text005" transform="matrix(2.17673,-2.24621,0.718126,0.695913,11.4584,19.7139)" xml:space="preserve" fill="white" font-family="Arial" font-size="6" font-weight="400" x="0" y="0">9.</text>
+	<text id="dp_text006" transform="matrix(1.60027,1.85852,-0.757793,0.652495,36.139,7.35991)" xml:space="preserve" fill="white" font-family="Arial" font-size="8" font-weight="400" x="0" y="0">I</text>
+	<text id="dp_text007" transform="matrix(1.60027,1.85852,-0.757793,0.652495,41.2074,10.121)" xml:space="preserve" fill="white" font-family="Arial" font-size="8" font-weight="400" x="0" y="0">I</text>
+</svg>

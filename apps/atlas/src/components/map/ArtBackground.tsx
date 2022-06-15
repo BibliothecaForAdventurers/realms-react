@@ -1,6 +1,6 @@
 import { animated, useSpring } from '@react-spring/web';
 import { useState } from 'react';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 
 export type BackgroundOptions =
   | 'hero'
@@ -18,7 +18,7 @@ const defaultProps: ArtBackgroundProps = {
   background: 'hero',
 };
 export const ArtBackground = (props: ArtBackgroundProps) => {
-  const { artBackground } = useUIContext();
+  const { artBackground } = useAtlasContext();
   const opacityAnimation = useSpring({
     zIndex: artBackground ? 10 : 0,
     opacity: artBackground ? 1 : 0,

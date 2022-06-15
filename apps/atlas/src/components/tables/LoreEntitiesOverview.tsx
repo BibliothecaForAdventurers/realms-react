@@ -6,7 +6,7 @@ import type {
   LoreEntityFragmentFragment,
   RealmFragmentFragment,
 } from '@/generated/graphql';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 
 interface LoreEntitiesOverviewsProps {
@@ -19,7 +19,7 @@ const kinds = {
 };
 
 export function LoreEntitiesOverview(props: LoreEntitiesOverviewsProps) {
-  const { setModal } = useUIContext();
+  const { setModal } = useAtlasContext();
 
   return (
     <div className={`grid grid-cols-2 gap-3`}>

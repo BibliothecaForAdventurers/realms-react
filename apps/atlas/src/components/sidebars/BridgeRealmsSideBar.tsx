@@ -7,7 +7,7 @@ import { SelectableRealm } from '@/components/tables/SelectableRealm';
 import { useRealmContext } from '@/context/RealmContext';
 import type { RealmFragmentFragment } from '@/generated/graphql';
 import { useGetRealmsQuery } from '@/generated/graphql';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import { RealmCard } from '../cards/RealmCard';
 import { BaseSideBar } from './BaseSideBar';
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export const BridgeRealmsSideBar = () => {
-  const { toggleMenuType, selectedMenuType, showDetails } = useUIContext();
+  const { toggleMenuType, selectedMenuType, showDetails } = useAtlasContext();
   const { account } = useWalletContext();
   const [selectedResource, setResource] = useState<number>();
   const isBridgeRealms = selectedMenuType === 'bridgeRealms' && showDetails;

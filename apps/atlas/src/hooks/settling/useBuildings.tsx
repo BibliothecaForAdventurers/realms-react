@@ -1,18 +1,13 @@
-import { useStarknetCall, useStarknetInvoke } from '@starknet-react/core';
+import { useStarknetInvoke } from '@starknet-react/core';
 import { toBN } from 'starknet/dist/utils/number';
-import { bnToUint256, uint256ToBN } from 'starknet/dist/utils/uint256';
+import { bnToUint256 } from 'starknet/dist/utils/uint256';
 import { useBuildingContract } from '@/hooks/settling/stark-contracts';
 
 type Building = {
-  build: (building_id: number) => void;
-  realmBuildings: any;
-  loading: boolean;
-};
-type useBuildingArgs = {
-  token_id: number;
+  build: (realmId: number, buildingId: number) => void;
 };
 
-const useBuildings = (args: useBuildingArgs): Building => {
+const useBuildings = (): Building => {
   const { contract: buildingContract } = useBuildingContract();
 
   const buildAction = useStarknetInvoke({
@@ -20,25 +15,17 @@ const useBuildings = (args: useBuildingArgs): Building => {
     method: 'build',
   });
 
-  const { data, loading, error } = useStarknetCall({
-    contract: buildingContract,
-    method: 'fetch_buildings_by_type',
-    args: [bnToUint256(toBN(args.token_id))],
-  });
-
-  let realmBuildings: any = undefined;
-  if (data != undefined) {
-    realmBuildings = data;
-  }
-
   return {
-    build: (building_id: number) => {
+    build: (realmId: number, buildingId: number) => {
       buildAction.invoke({
-        args: [bnToUint256(toBN(args.token_id)), building_id],
+        args: [bnToUint256(toBN(realmId)), buildingId],
+        metadata: {
+          action: 'realm_building',
+          realmId,
+          buildingId,
+        },
       });
     },
-    realmBuildings,
-    loading,
   };
 };
 

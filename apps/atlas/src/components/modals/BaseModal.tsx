@@ -1,11 +1,12 @@
 import { Button } from '@bibliotheca-dao/ui-lib';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import { animated, useSpring } from '@react-spring/web';
-import { useUIContext } from '@/hooks/useUIContext';
-import { LoreEntityModal } from './LoreEntityModal';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
+/* import { LoreEntityModal } from './LoreEntityModal'; */
+import { RaidResultModal } from './RaidResultModal';
 
 export const BaseModal = () => {
-  const { selectedModal, setModal } = useUIContext();
+  const { selectedModal, setModal } = useAtlasContext();
 
   const animation = useSpring({
     opacity: selectedModal ? 1 : 0,
@@ -20,12 +21,15 @@ export const BaseModal = () => {
 
   let component;
 
-  if (selectedModal.type === 'lore-entity') {
-    const props: any = selectedModal.props;
-    if (!props) {
-      return null;
-    }
-    component = <LoreEntityModal entityId={parseInt(props.id)} />;
+  const props: any = selectedModal.props;
+
+  if (selectedModal.type === 'lore-entity' && props) {
+    /* component = <LoreEntityModal entityId={parseInt(props.id)} />; */
+  }
+  if (selectedModal.type === 'raid-result' && props) {
+    component = (
+      <RaidResultModal defendId={parseInt(props.defendId)} tx={props.tx} />
+    );
   }
 
   return (

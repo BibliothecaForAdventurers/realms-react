@@ -3,14 +3,14 @@ import { Button } from '@bibliotheca-dao/ui-lib/base';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import Danger from '@bibliotheca-dao/ui-lib/icons/danger.svg';
 import { getCryptQuery } from '@/hooks/graphql/queries';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import type { CryptData } from '@/types/index';
 import { Crypt } from '../cards/Crypt';
 import { BaseSideBar } from './BaseSideBar';
 
 export const CryptsSideBar = () => {
   const { toggleMenuType, selectedMenuType, showDetails, selectedId } =
-    useUIContext();
+    useAtlasContext();
   const isCryptsSelected = selectedMenuType === 'crypt' && showDetails;
   const { loading, error, data } = useQuery<CryptData>(getCryptQuery, {
     variables: { id: selectedId },

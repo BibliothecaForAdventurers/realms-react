@@ -4,6 +4,7 @@ import { OrderIcon, Tabs, ResourceIcon, Button } from '@bibliotheca-dao/ui-lib';
 import Castle from '@bibliotheca-dao/ui-lib/icons/castle.svg';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
 import { useStarknet } from '@starknet-react/core';
+import { BigNumber } from 'ethers';
 import type { ReactElement } from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { SelectableRealm } from '@/components/tables/SelectableRealm';
@@ -11,7 +12,7 @@ import { useRealmContext } from '@/context/RealmContext';
 import type { RealmFragmentFragment } from '@/generated/graphql';
 import { useGetRealmsQuery } from '@/generated/graphql';
 import useSettling from '@/hooks/settling/useSettling';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import { RealmCard } from '../cards/RealmCard';
 import { BaseSideBar } from './BaseSideBar';
@@ -41,11 +42,14 @@ function RealmsSelectable(props: RealmsSelectableProps): ReactElement {
     actions,
   } = useRealmContext();
   const { account } = useStarknet();
+
+  const starknetWallet = account ? BigNumber.from(account).toHexString() : '';
+
   const unsettledRealms = props.realms?.filter(
-    (realm) => realm.ownerL2 == account?.toLowerCase()
+    (realm) => realm.ownerL2 == starknetWallet
   );
   const settledRealms = props.realms?.filter(
-    (realm) => realm.settledOwner == account?.toLowerCase()
+    (realm) => realm.settledOwner == starknetWallet
   );
   const displayedRealms =
     props.selectedTab === 0 ? unsettledRealms : settledRealms;
@@ -67,10 +71,12 @@ function RealmsSelectable(props: RealmsSelectableProps): ReactElement {
 
 /* TBD Should this be merged with Bridge Realms Sidebar */
 export const SettleRealmsSideBar = () => {
-  const { toggleMenuType, selectedMenuType, showDetails } = useUIContext();
+  const { toggleMenuType, selectedMenuType, showDetails } = useAtlasContext();
   const { account } = useStarknet();
   const [selectedResource, setResource] = useState<number>();
   const isSettleRealms = selectedMenuType === 'settleRealms' && showDetails;
+
+  const starknetWallet = account ? BigNumber.from(account).toHexString() : '';
 
   const { settleRealm, unsettleRealm, isRealmsApproved, approveRealms } =
     useSettling();
@@ -81,14 +87,14 @@ export const SettleRealmsSideBar = () => {
   const [page, setPage] = useState(1);
 
   const [filterOr, setFilterOr] = useState<OwnerFilter>([
-    { settledOwner: { equals: account?.toLowerCase() } },
+    { settledOwner: { equals: starknetWallet } },
   ]);
   const variables = useMemo(() => {
     const filter = {} as any;
 
     filter.OR = [
-      { ownerL2: { equals: account?.toLowerCase() } },
-      { settledOwner: { equals: account?.toLowerCase() } },
+      { ownerL2: { equals: starknetWallet } },
+      { settledOwner: { equals: starknetWallet } },
     ];
 
     return {
@@ -96,7 +102,7 @@ export const SettleRealmsSideBar = () => {
       take: limit,
       skip: limit * (page - 1),
     };
-  }, [account, page]);
+  }, [starknetWallet, page]);
   const [selectedTab, setSelectedTab] = useState(0);
 
   const { data, loading, refetch } = useGetRealmsQuery({

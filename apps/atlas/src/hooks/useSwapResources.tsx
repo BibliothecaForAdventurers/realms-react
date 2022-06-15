@@ -1,116 +1,99 @@
-import { useState, useEffect } from 'react';
-
-const resources = [
-  'Wood',
-  'Stone',
-  'Coal',
-  'Copper',
-  'Obsidian',
-  'Silver',
-  'Ironwood',
-  'Cold Iron',
-  'Gold',
-  'Hartwood',
-  'Diamonds',
-  'Sapphire',
-  'Ruby',
-  'Deep Crystal',
-  'Ignium',
-  'Ethereal Silica',
-  'True Ice',
-  'Twilight Quartz',
-  'Alchemical Silver',
-  'Adamantine',
-  'Mithral',
-  'Dragonhide',
-];
-
-export type Resource = typeof resources[number];
+import { useStarknetInvoke } from '@starknet-react/core';
+import { BigNumber } from 'ethers';
+import { toFelt } from 'starknet/dist/utils/number';
+import { bnToUint256 } from 'starknet/dist/utils/uint256';
+import { useExchangeContract } from './settling/stark-contracts';
+import useTxCallback from './useTxCallback';
 
 export type ResourceQty = {
-  name: Resource;
-  qty: string | number;
+  resourceId: number;
+  qty: number;
 };
 
-export const useSwapResources = () => {
-  const [loading, setLoading] = useState(false);
-  const [selectedResources, setSelectedResources] = useState<ResourceQty[]>([]);
-  const [availableResources, setAvailableResources] =
-    useState<Resource[]>(resources);
+const useSwapResourcesTransaction = (method: string) => {
+  const { contract: exchangeContract } = useExchangeContract();
+  const {
+    data: transactionHash,
+    invoke,
+    error: invokeError,
+  } = useStarknetInvoke({
+    contract: exchangeContract,
+    method,
+  });
+  const { tx, loading } = useTxCallback(transactionHash, (status) => {
+    // Update state changes?
+    return true;
+  });
 
-  const addSelectedResources = () => {
-    setSelectedResources((prevRows) => [
-      ...prevRows,
-      {
-        name: availableResources[0],
-        qty: 0, // Random age
-      },
-    ]);
+  return {
+    transactionHash: tx,
+    invoke,
+    invokeError,
+    loading,
   };
-  const removeSelectedResource = (name: Resource) => {
-    setSelectedResources(
-      selectedResources.filter((item) => item.name !== name)
-    );
-  };
-  const updateSelectedResource = (
-    name: string,
-    qty?: number | string,
-    newName?: string
+};
+
+export const useBuyResources = () => {
+  const { transactionHash, invoke, invokeError, loading } =
+    useSwapResourcesTransaction('buy_tokens');
+  const buyTokens = (
+    maxAmount: BigNumber,
+    tokenIds: number[],
+    tokenAmounts: BigNumber[],
+    deadline: number
   ) => {
-    console.log(qty);
-    console.log(name);
-    console.log(selectedResources);
-    setSelectedResources(
-      selectedResources.map((resourceRow) => {
-        console.log(resourceRow);
-        if (resourceRow.name === name) {
-          console.log(name);
-          resourceRow.qty = qty ? qty : resourceRow.qty;
-          resourceRow.name = newName ? newName : resourceRow.name;
-          console.log(resourceRow);
-          return { ...resourceRow };
-        } else {
-          return { ...resourceRow };
-        }
-      })
-    );
-  };
-  const updateResourceQty = ({ name, qty }: ResourceQty) => {
-    setSelectedResources(
-      selectedResources.map((resourceRow) =>
-        resourceRow.name === name
-          ? { ...resourceRow, qty: qty }
-          : { ...resourceRow }
-      )
-    );
-  };
-  const handleResourceChange = (name: string, newName: string) => {
-    setSelectedResources(
-      selectedResources.map((resourceRow) =>
-        resourceRow.name === name
-          ? { ...resourceRow, name: newName, qty: 0 }
-          : { ...resourceRow }
-      )
-    );
-  };
-  useEffect(() => {
-    const resourceRowNames = selectedResources.map((i) => {
-      return i.name;
+    if (loading) {
+      return;
+    }
+    invoke({
+      args: [
+        bnToUint256(maxAmount.toHexString()),
+        tokenIds.map((value) => bnToUint256(value)),
+        tokenAmounts.map((value) =>
+          bnToUint256(BigNumber.from(value).toHexString())
+        ),
+        toFelt(deadline),
+      ],
     });
-    setAvailableResources(
-      resources.filter(function (el) {
-        return resourceRowNames.indexOf(el) < 0;
-      })
-    );
-  }, [selectedResources]);
+  };
+
   return {
     loading,
-    availableResources,
-    selectedResources,
-    addSelectedResources,
-    removeSelectedResource,
-    updateResourceQty,
-    handleResourceChange,
-    updateSelectedResource,
+    buyTokens,
+    transactionHash,
+    invokeError,
+  };
+};
+
+export const useSellResources = () => {
+  const { transactionHash, invoke, invokeError, loading } =
+    useSwapResourcesTransaction('sell_tokens');
+
+  const sellTokens = (
+    minAmount: BigNumber,
+    tokenIds: number[],
+    tokenAmounts: BigNumber[],
+    deadline: number
+  ) => {
+    if (loading) {
+      return;
+    }
+    invoke({
+      args: [
+        bnToUint256(minAmount.toHexString()),
+        tokenIds.map((value) => bnToUint256(value)),
+        tokenAmounts.map((value) =>
+          bnToUint256(BigNumber.from(value).toHexString())
+        ),
+        toFelt(deadline),
+      ],
+    });
+  };
+
+  return {
+    loading,
+    sellTokens,
+    transactionHash,
+    invokeError,
   };
 };

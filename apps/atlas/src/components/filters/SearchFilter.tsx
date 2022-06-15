@@ -12,6 +12,7 @@ export function SearchFilter(props: SearchFilterProps) {
   useEffect(() => {
     setValue(props.defaultValue ?? '');
   }, [props.defaultValue]);
+
   function doSubmit() {
     if (!props.onSubmit) {
       return;
@@ -20,9 +21,9 @@ export function SearchFilter(props: SearchFilterProps) {
   }
 
   return (
-    <div className="bg-black/40 p-1.5 rounded flex gap-1 justify-center items-center">
+    <div className="flex items-center justify-center gap-1 px-2 py-1 rounded shadow-inner bg-black/10">
       <input
-        className="w-full px-3 py-2 h-9 leading-tight text-white font-bold text-sm uppercase focus:outline-none rounded appearance-none bg-gray-800/80 hover:bg-gray-300/20 tracking-widest"
+        className="w-full px-3 py-2 text-sm font-bold leading-tight tracking-widest text-white uppercase transition-all duration-300 rounded shadow-md appearance-none h-9 focus:outline-none bg-gray-800/40 hover:bg-gray-300/20"
         type="text"
         value={value}
         onChange={(e) => {
@@ -37,7 +38,7 @@ export function SearchFilter(props: SearchFilterProps) {
       />
 
       <button
-        className="bg-900/80 rounded flex justify-center items-center p-2 h-9 cursor-pointer hover:bg-gray-300/20"
+        className="flex items-center justify-center p-2 transition-all duration-300 rounded cursor-pointer h-9 hover:bg-gray-300/20"
         onClick={doSubmit}
       >
         <svg
@@ -50,14 +51,14 @@ export function SearchFilter(props: SearchFilterProps) {
           <g clipPath="url(#clip0_566_2495)">
             <path
               d="M5.95833 10.6472C8.35157 10.6472 10.2917 8.70713 10.2917 6.31389C10.2917 3.92066 8.35157 1.98056 5.95833 1.98056C3.5651 1.98056 1.625 3.92066 1.625 6.31389C1.625 8.70713 3.5651 10.6472 5.95833 10.6472Z"
-              stroke="#B1B1B1"
+              stroke="#fff"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d="M11.3748 11.7305L9.01855 9.3743"
-              stroke="#B1B1B1"
+              stroke="#fff"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"

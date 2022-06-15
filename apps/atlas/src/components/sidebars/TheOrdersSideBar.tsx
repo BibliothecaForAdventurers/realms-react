@@ -3,12 +3,12 @@ import Left from '@bibliotheca-dao/ui-lib/icons/chevron-left.svg';
 import Right from '@bibliotheca-dao/ui-lib/icons/chevron-right.svg';
 import Menu from '@bibliotheca-dao/ui-lib/icons/menu.svg';
 import { useState } from 'react';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { orderDetails } from '@/util/theOrders';
 import { BaseSideBar } from './BaseSideBar';
 
 export const TheOrdersSideBar = () => {
-  const { toggleMenuType, selectedMenuType, gotoAssetId } = useUIContext();
+  const { toggleMenuType, selectedMenuType, gotoAssetId } = useAtlasContext();
   const [focusOrder, setOrder] = useState<number>(0);
 
   const changeOrder = (value: any) => {

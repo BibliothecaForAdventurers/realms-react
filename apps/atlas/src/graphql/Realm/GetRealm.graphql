@@ -1,6 +1,68 @@
- 
 query getRealm($id: Float!) @api(name: starkIndexer) {
-    getRealm(realmId: $id) {
-        ...RealmFragment
+  getRealm(realmId: $id) {
+    ...RealmFragment
+  }
+}
+
+query getBuildingsByRealmId($id: Float!) @api(name: starkIndexer) {
+  getBuildingsByRealmId(id: $id) {
+    realmId
+    buildingId
+    buildingName
+    limit
+    limitTraitId
+    limitTraitName
+    count
+    population
+    food
+    culture
+    buildingCost {
+      amount
+      resources
     }
+  }
+}
+
+query getRealmHistory(
+  $filter: RealmHistoryWhereInput
+  $take: Float
+  $skip: Float
+) @api(name: starkIndexer) {
+  getRealmHistory(filter: $filter, take: $take, skip: $skip) {
+    id
+    eventType
+    realmId
+    realmOwner
+    data
+    timestamp
+    transactionHash
+  }
+}
+
+query getRealmCombatResult($defendRealmId: Float!, $transactionHash: String!)
+@api(name: starkIndexer) {
+  getRealmCombatResult(
+    defendRealmId: $defendRealmId
+    transactionHash: $transactionHash
+  ) {
+    defendRealmId
+    attackRealmId
+    transactionHash
+    history {
+      eventType
+      attackSquad
+      defendSquad
+      outcome
+      attackType
+      hitPoints
+      timestamp
+    }
+    resourcesPillaged {
+      resourceId
+      resourceName
+      amount
+    }
+    outcome
+    timestamp
+  }
 }

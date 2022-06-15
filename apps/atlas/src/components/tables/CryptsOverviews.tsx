@@ -1,6 +1,6 @@
 import { Button, ResourceIcon } from '@bibliotheca-dao/ui-lib';
 import { useCryptContext } from '@/context/CryptContext';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import type { Crypt } from '@/types/index';
 import {
@@ -16,14 +16,7 @@ interface CryptOverviewsProps {
 
 export function CryptsOverviews(props: CryptOverviewsProps) {
   const { account } = useWalletContext();
-  const {
-    toggleMenuType,
-    selectedMenuType,
-    setSelectedAssetType,
-    setSelectedId,
-    gotoAssetId,
-    togglePanelType,
-  } = useUIContext();
+  const { openDetails, gotoAssetId, togglePanelType } = useAtlasContext();
   const {
     state: { favouriteCrypt },
     actions,
@@ -31,14 +24,6 @@ export function CryptsOverviews(props: CryptOverviewsProps) {
 
   const isYourCrypt = (crypt: Crypt) =>
     account && account === crypt.currentOwner?.address?.toLowerCase();
-
-  const openCryptDetails = (id: string) => {
-    setSelectedId(id);
-    setSelectedAssetType('crypt');
-    if (selectedMenuType !== 'crypt') {
-      toggleMenuType('crypt');
-    }
-  };
 
   const isFavourite = (crypt: Crypt) => favouriteCrypt.indexOf(crypt.id) > -1;
 
@@ -101,7 +86,7 @@ export function CryptsOverviews(props: CryptOverviewsProps) {
                 fly to
               </Button>
               <Button
-                onClick={() => openCryptDetails(crypt.id)}
+                onClick={() => openDetails('crypt', crypt.id)}
                 variant="secondary"
                 size="xs"
                 className="w-full "

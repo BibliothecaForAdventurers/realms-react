@@ -12,7 +12,7 @@ import {
   useGetLoreEntitiesQuery,
   useGetRealmsQuery,
 } from '@/generated/graphql';
-import { useUIContext } from '@/hooks/useUIContext';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useWalletContext } from '@/hooks/useWalletContext';
 import Button from '@/shared/Button';
 import { CreateLoreEntity } from '../modules/Lore/CreateLoreEntity';
@@ -20,7 +20,7 @@ import { BasePanel } from './BasePanel';
 
 export const LorePanel = () => {
   const { isDisplayLarge, togglePanelType, selectedPanel, openDetails } =
-    useUIContext();
+    useAtlasContext();
   const { account } = useWalletContext();
   const { account: starknetAccount } = useStarknet();
   const { state, actions } = useRealmContext();

@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import type { ReactElement } from 'react';
 import React from 'react';
+import { useAtlasContext } from '@/hooks/useAtlasContext';
 import { useEnsResolver } from '@/hooks/useEnsResolver';
-import { useUIContext } from '@/hooks/useUIContext';
 import { MarketplaceByPanel } from '@/shared/MarketplaceByPanel';
 import {
   isLegendary,
@@ -15,7 +15,7 @@ const variantMaps: any = {
 };
 
 export function Crypt(props: CryptProps): ReactElement {
-  const { gotoAssetId } = useUIContext();
+  const { gotoAssetId } = useAtlasContext();
 
   const ensData = useEnsResolver(props.crypt.currentOwner.address);
 
