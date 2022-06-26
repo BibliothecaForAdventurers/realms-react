@@ -1,9 +1,6 @@
 import type { Dispatch } from 'react';
 import { useMemo, createContext, useContext, useReducer } from 'react';
-import type {} from // ResourceType,
-// OrderType,
-// RealmTraitType,
-'@/generated/graphql';
+// import type {} from '@/generated/graphql';
 import { storage } from '@/util/localStorage';
 
 const LoreFavoriteLocalStorageKey = 'lore.favourites';
@@ -13,15 +10,18 @@ interface LoreState {
   selectedTab: number;
 }
 
-type RealmAction =
-  | { type: 'clearFilfters' }
+type LoreAction =
+  | { type: 'clearFilters' }
   | { type: 'addFavouriteLoreEntity'; payload: number }
-  | { type: 'removeFavouriteLoreEntity'; payload: number };
+  | { type: 'removeFavouriteLoreEntity'; payload: number }
+  | { type: 'updateSelectedTab'; payload: number };
 
 interface LoreActions {
   clearFilters(): void;
   addFavouriteLoreEntity(realmId: number): void;
   removeFavouriteLoreEntity(realmId: number): void;
+  // General actions for tabs and stuff
+  updateSelectedTab(tab: number): void;
 }
 
 const defaultFilters = {
@@ -31,12 +31,14 @@ const defaultFilters = {
 const defaultLoreState = {
   ...defaultFilters,
   favouriteEntities: [] as number[],
-  selectedTab: 1,
+  selectedTab: 0,
 };
 
-function realmReducer(state: LoreState, action: RealmAction): LoreState {
+function loreReducer(state: LoreState, action: LoreAction): LoreState {
   switch (action.type) {
-    case 'clearFilfters':
+    case 'updateSelectedTab':
+      return { ...state, selectedTab: action.payload };
+    case 'clearFilters':
       return { ...state, ...defaultFilters };
     case 'addFavouriteLoreEntity':
       storage<number[]>(LoreFavoriteLocalStorageKey, []).set([
@@ -65,35 +67,37 @@ function realmReducer(state: LoreState, action: RealmAction): LoreState {
 }
 
 // Actions
-const mapActions = (dispatch: Dispatch<RealmAction>): LoreActions => ({
-  clearFilters: () => dispatch({ type: 'clearFilfters' }),
+const mapActions = (dispatch: Dispatch<LoreAction>): LoreActions => ({
+  clearFilters: () => dispatch({ type: 'clearFilters' }),
   addFavouriteLoreEntity: (realmId: number) =>
     dispatch({ type: 'addFavouriteLoreEntity', payload: realmId }),
   removeFavouriteLoreEntity: (realmId: number) =>
     dispatch({ type: 'removeFavouriteLoreEntity', payload: realmId }),
+  updateSelectedTab: (tab: number) =>
+    dispatch({ type: 'updateSelectedTab', payload: tab }),
 });
 
-const RealmContext = createContext<{
+const LoreContext = createContext<{
   state: LoreState;
-  dispatch: Dispatch<RealmAction>;
+  dispatch: Dispatch<LoreAction>;
   actions: LoreActions;
 }>(null!);
 
-export function useRealmContext() {
-  return useContext(RealmContext);
+export function useLoreContext() {
+  return useContext(LoreContext);
 }
 
-export function RealmProvider({ children }: { children: JSX.Element }) {
-  const [state, dispatch] = useReducer(realmReducer, {
+export function LoreProvider({ children }: { children: JSX.Element }) {
+  const [state, dispatch] = useReducer(loreReducer, {
     ...defaultLoreState,
     favouriteEntities: storage<number[]>(LoreFavoriteLocalStorageKey, []).get(),
   });
 
   return (
-    <RealmContext.Provider
+    <LoreContext.Provider
       value={{ state, dispatch, actions: mapActions(dispatch) }}
     >
       {children}
-    </RealmContext.Provider>
+    </LoreContext.Provider>
   );
 }

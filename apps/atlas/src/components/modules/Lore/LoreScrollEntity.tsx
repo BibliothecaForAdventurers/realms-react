@@ -10,11 +10,19 @@ type LoreScrollEntityProps = {
 };
 
 export const LoreScrollEntity = ({ entity }) => {
-  const { data: pois, loading: poisLoading } = useGetLorePoisQuery();
+  // const { data: pois, loading: poisLoading } = useGetLorePoisQuery();
+
+  if (entity.revisions === 0) {
+    return <div>No revision found</div>;
+  }
 
   return (
     <div className={`p-6 my-2 mb-1 bg-black rounded-md`}>
-      <h1 className={`text-6xl font-bold mb-6`}>{entity.revisions[0].title}</h1>
+      {entity.revisions[0].title ? (
+        <h1 className={`text-6xl font-bold mb-6`}>
+          {entity.revisions[0].title}
+        </h1>
+      ) : null}
 
       <LoreMarkdownRenderer>
         {entity.revisions[0].markdown}
