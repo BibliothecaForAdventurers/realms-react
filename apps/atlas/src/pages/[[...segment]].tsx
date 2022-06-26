@@ -34,6 +34,7 @@ import { TransactionCartSideBar } from '@/components/sidebars/TransactionCartSid
 import { CryptProvider } from '@/context/CryptContext';
 import { GaProvider } from '@/context/GaContext';
 import { LootProvider } from '@/context/LootContext';
+import { LoreProvider } from '@/context/LoreContext';
 import { RealmProvider } from '@/context/RealmContext';
 import { ResourceProvider } from '@/context/ResourcesContext';
 import crypts from '@/geodata/crypts_all.json';
@@ -77,6 +78,7 @@ function AtlasMain() {
       <ResourceSwapSideBar />
       <TradePanel />
       <CombatPanel />
+      <LoreModule />
       {/* <FlyTo /> */}
       <MapModule />
       <BaseModal />
@@ -101,13 +103,20 @@ function RealmsModule() {
       {realmId === 0 && (
         <>
           <RealmsPanel />
-          <LorePanel />
           <RealmSideBar />
           <BridgeRealmsSideBar />
           <SettleRealmsSideBar />
         </>
       )}
     </RealmProvider>
+  );
+}
+
+function LoreModule() {
+  return (
+    <LoreProvider>
+      <LorePanel />
+    </LoreProvider>
   );
 }
 
