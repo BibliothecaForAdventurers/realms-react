@@ -188,11 +188,11 @@ export const CreateLoreEntity = () => {
     }
 
     if (markdown.length === 0) {
-      newErrors.push('Markdow body should not be empty');
+      newErrors.push('Markdown body should not be empty');
     }
 
     if (markdown.length > 30000) {
-      newErrors.push('Markdow body should not be than 30k characters');
+      newErrors.push('Markdown body should not be than 30k characters');
     }
 
     if (entityAuthor.length === 0) {
