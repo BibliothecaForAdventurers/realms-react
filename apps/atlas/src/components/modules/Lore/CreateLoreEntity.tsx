@@ -3,9 +3,11 @@ import {
   useStarknet,
   useContract,
   useStarknetInvoke,
+  useStarknetCall,
 } from '@starknet-react/core';
 import Arweave from 'arweave';
 import axios from 'axios';
+import BN from 'bn.js';
 import clsx from 'clsx';
 import Prism from 'prismjs';
 import React, {
@@ -18,10 +20,13 @@ import React, {
 import { Text, createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, Editable, withReact } from 'slate-react';
-import { defaultProvider } from 'starknet';
+import { Contract, defaultProvider } from 'starknet';
 import type { Abi } from 'starknet';
-import { bnToUint256 } from 'starknet/dist/utils/uint256';
+import { toBN } from 'starknet/dist/utils/number';
+import { bnToUint256, uint256ToBN } from 'starknet/dist/utils/uint256';
+import { useWalletContext } from '@/hooks/useWalletContext';
 import type { UploadArweaveResponse } from '@/pages/api/lore/upload_arweave';
+import erc20Abi from 'abi/l2/erc20.json';
 import loreContractABI from '../../../abi/lore/Lore.json';
 import { initialValue, LoreEditor } from './editor';
 import {
@@ -48,8 +53,10 @@ const arweave = Arweave.init({
 
 export const CreateLoreEntity = () => {
   // States
+  const [entityAuthor, setEntityAuthor] = useState('');
   const [entityTitle, setEntityTitle] = useState('');
   const [editorValue, setEditorValue] = useState(initialValue);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [creatingStep, setCreatingStep] = useState<CREATING_STEPS>(
     CREATING_STEPS.INITIAL
   );
@@ -57,9 +64,30 @@ export const CreateLoreEntity = () => {
   const [starknetTxID, setStarknetTxID] = useState<string | undefined>(
     undefined
   );
+  const [l2EthBalance, setL2EthBalance] = useState<BN>(new BN(0));
 
   // Hooks
   const starknet = useStarknet();
+
+  const {
+    data: ethBalanceData,
+    loading: ethBalanceLoading,
+    refresh,
+  } = useStarknetCall({
+    contract: new Contract(
+      erc20Abi as Abi,
+      '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+      starknet.library
+    ),
+    method: 'balanceOf',
+    args: [toBN(starknet.account as string).toString()],
+  });
+
+  useEffect(() => {
+    if (ethBalanceData && ethBalanceData[0]) {
+      setL2EthBalance(ethBalanceData[0]);
+    }
+  }, [ethBalanceLoading]);
 
   const { contract: loreContract } = useContract({
     abi: loreContractABI as Abi,
@@ -89,7 +117,7 @@ export const CreateLoreEntity = () => {
   const waitForArweave = async (arweaveId: string) => {
     try {
       let arweaveStatus = await arweave.transactions.getStatus(arweaveId);
-      console.log(arweaveStatus);
+      // console.log(arweaveStatus);
 
       while (
         arweaveStatus.confirmed === null ||
@@ -98,7 +126,7 @@ export const CreateLoreEntity = () => {
       ) {
         await wait(5000);
         arweaveStatus = await arweave.transactions.getStatus(arweaveId);
-        console.log(arweaveStatus);
+        // console.log(arweaveStatus);
       }
     } catch (error) {
       await waitForArweave(arweaveId);
@@ -126,8 +154,6 @@ export const CreateLoreEntity = () => {
       return { id: poi.id, asset_id: bnToUint256(0) };
     });
 
-    // console.log(starkinizedPOIs);
-
     const args = [
       {
         Part1: part1,
@@ -146,15 +172,50 @@ export const CreateLoreEntity = () => {
   const entityData = {
     title: entityTitle,
     markdown: markdown,
+    author: entityAuthor,
     pois: extractPOIs(markdown),
   };
 
+  const validateEntity = () => {
+    const newErrors: string[] = [];
+
+    if (entityTitle.length === 0) {
+      newErrors.push('Title should not be empty');
+    }
+
+    if (entityTitle.length > 200) {
+      newErrors.push('Title should not be more than 200 characters long');
+    }
+
+    if (markdown.length === 0) {
+      newErrors.push('Markdow body should not be empty');
+    }
+
+    if (markdown.length > 30000) {
+      newErrors.push('Markdow body should not be than 30k characters');
+    }
+
+    if (entityAuthor.length === 0) {
+      newErrors.push('Author should not be empty');
+    }
+
+    if (newErrors.length === 0) {
+      return true;
+    }
+
+    setValidationErrors(newErrors);
+    return false;
+  };
+
   const createEntity = async () => {
+    if (!validateEntity()) {
+      return;
+    }
+
     // Clearing
     setArweaveTxID(null);
     setStarknetTxID(undefined);
 
-    // console.log(entityData);
     try {
       setCreatingStep(CREATING_STEPS.UPLOADING_TO_ARWEAVE);
 
@@ -199,18 +260,13 @@ export const CreateLoreEntity = () => {
       <div className="flex flex-col gap-1 p-2 mb-2 rounded bg-black/40">
         <div className={`text-white text-sm uppercase pl-1 mt-1`}>Title</div>
         <input
-          className="w-full px-4 py-4 mt-2 text-xl font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80"
+          className="w-full px-4 py-4 text-xl font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80"
           type="text"
           value={entityTitle}
           onChange={(ev) => setEntityTitle(ev.target.value)}
           placeholder={`Enter title here...`}
         />
         <div className={`text-white text-sm uppercase pl-1 mt-2`}>Content</div>
-
-        <p className={`bg-gray-800/80 text-white text-xs pl-1 mt-2`}>
-          supported 🔗: 1/(scroll), 1000/realm, 1001/order, 1002/resource,
-          1003/wonder, 1004/(AMM), 2000/crypt, 3000/(lord/lady)
-        </p>
 
         <LoreEditor
           className={`text-white outline-none bg-gray-900 p-4 rounded-md`}
@@ -219,12 +275,29 @@ export const CreateLoreEntity = () => {
           }}
         />
 
-        <div>
+        <p className={`bg-gray-800/80 text-white text-sm pl-1 rounded-md px-2`}>
+          Write backslash / to open a context menu or read instructions here
+        </p>
+
+        <div className={`mt-1`}>
+          <div className={`text-white text-sm uppercase pl-1 mr-2 mb-1`}>
+            Author
+          </div>
+          <input
+            className="w-full px-2 py-2 text-lg font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80"
+            type="text"
+            value={entityAuthor}
+            onChange={(ev) => setEntityAuthor(ev.target.value)}
+            placeholder={`Enter your nickname...`}
+          />
+        </div>
+
+        <div className={`mt-2`}>
           <Button
             variant={
               creatingStep > 0 || !starknet.account ? 'secondary' : 'primary'
             }
-            size="sm"
+            size="md"
             disabled={creatingStep > 0 || !starknet.account}
             onClick={createEntity}
             loading={creatingStep > 0}
@@ -232,6 +305,16 @@ export const CreateLoreEntity = () => {
             {starknet.account ? 'Create scroll' : 'Connect starknet wallet'}
           </Button>
         </div>
+
+        {validationErrors.length === 0 ? null : (
+          <div className={`text-red-500 font-bold leading-none mt-2 px-3`}>
+            {validationErrors.map((x) => (
+              <div key={x} className={`mb-1`}>
+                - {x}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div
           className={clsx(`mt-4 relative`, {
@@ -342,7 +425,12 @@ export const CreateLoreEntity = () => {
           <LoreScrollEntity
             entity={{
               revisions: [
-                { title: entityTitle, markdown: entityData.markdown },
+                {
+                  title: entityTitle,
+                  markdown:
+                    entityData.markdown ||
+                    '_Start typing in the Editor and preview will appear here..._',
+                },
               ],
             }}
           />
