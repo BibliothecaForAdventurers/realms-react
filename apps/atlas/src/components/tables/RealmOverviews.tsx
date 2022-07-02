@@ -83,7 +83,7 @@ export function RealmOverviews(props: RealmOverviewsProps) {
     );
   }
 
-  console.log(props.realms);
+  // console.log(props.realms);
   return (
     <div>
       {/* {bridgeRow} */}

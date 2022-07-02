@@ -2,10 +2,11 @@ import { useQuery } from '@apollo/client';
 import { Button } from '@bibliotheca-dao/ui-lib';
 import Castle from '@bibliotheca-dao/ui-lib/icons/castle.svg';
 import Close from '@bibliotheca-dao/ui-lib/icons/close.svg';
-import { useGetRealmQuery } from '@/generated/graphql';
+import { useGetLoreEntitiesQuery, useGetRealmQuery } from '@/generated/graphql';
 import { getRealmQuery } from '@/hooks/graphql/queries';
 import { useAtlasContext } from '@/hooks/useAtlasContext';
 import type { Data } from '@/types/index';
+import { LoreEntityCard } from '../cards/LoreEntityCard';
 import { RealmCard } from '../cards/RealmCard';
 import { BaseSideBar } from './BaseSideBar';
 
@@ -19,6 +20,30 @@ export const RealmSideBar = () => {
     },
     skip: !isRealmsSelected,
   });
+
+  const { data: loreEntitiesData, loading: loreEntitiesLoading } =
+    useGetLoreEntitiesQuery({
+      variables: {
+        filter: {
+          revisions: {
+            every: {
+              pois: {
+                some: {
+                  poiId: {
+                    equals: 1000,
+                  },
+                  assetId: {
+                    equals: selectedId.toString(),
+                  },
+                },
+              },
+            },
+          },
+        },
+        take: 5,
+      },
+      skip: !isRealmsSelected,
+    });
 
   return (
     <BaseSideBar open={isRealmsSelected}>
@@ -37,6 +62,19 @@ export const RealmSideBar = () => {
           <div className="flex flex-col items-center w-20 gap-2 mx-auto my-40 animate-pulse">
             <Castle className="block w-20 fill-current" />
             <h2>Loading</h2>
+          </div>
+        )}
+
+        {!loading && !loreEntitiesLoading && loreEntitiesData?.getLoreEntities && (
+          <div className={`mt-2`}>
+            <div className={`bg-black/10 rounded-md p-2`}>
+              <h2 className={`text-2xl`}>Lore</h2>
+              {loreEntitiesData?.getLoreEntities.map((entity, index) => (
+                <div key={index} className={`mt-2`}>
+                  <LoreEntityCard entity={entity} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
