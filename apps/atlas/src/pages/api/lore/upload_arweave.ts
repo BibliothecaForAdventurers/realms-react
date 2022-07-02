@@ -1,7 +1,14 @@
+import Bundlr from '@bundlr-network/client';
 import Arweave from 'arweave';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import secrets from '@/util/secrets';
+
+const bundlr = new Bundlr(
+  'http://node1.bundlr.network',
+  'arweave',
+  secrets.arweaveKey
+);
 
 const arweave = Arweave.init({
   host: 'arweave.net',
@@ -18,23 +25,16 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const tx = await arweave.createTransaction(
-      {
-        data: JSON.stringify(req.body),
-      },
-      secrets.arweaveKey
-    );
+    const transaction = bundlr.createTransaction(JSON.stringify(req.body));
 
-    await arweave.transactions.sign(tx, secrets.arweaveKey);
+    await transaction.sign();
+    const resp = await transaction.upload();
 
-    const arweaveResponse = await arweave.transactions.post(tx);
-
-    console.log(tx);
-    console.log(arweaveResponse);
+    console.log(resp.data);
 
     res.send(
       JSON.stringify({
-        arweaveId: tx.id,
+        arweaveId: resp.data.id,
       })
     );
   } catch (error) {
