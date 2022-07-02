@@ -34,7 +34,7 @@ export const BaseModal = () => {
 
   return (
     <animated.div
-      className="absolute top-0 z-50 w-full h-full bg-center bg-cover"
+      className="absolute top-0 z-40 w-full h-full bg-center bg-cover"
       style={animation}
     >
       <div
