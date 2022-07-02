@@ -109,7 +109,7 @@ export const initialValue: any = [
 ];
 
 export const LoreEditor = ({
-  placeholder = 'Write some markdown...',
+  placeholder = 'Write your story using Markdown here...',
   onChange,
 }: TLoreEditor) => {
   const cmRef = useRef<any>();

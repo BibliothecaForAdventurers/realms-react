@@ -38,6 +38,12 @@ export function useTxMessage(metadata) {
         `Realm #${metadata.realmId} has mobilised their army for an attack.`,
       ];
 
+    case 'lore_create_entity':
+      return [
+        `Creating Lore Entity`,
+        `Lore Entity "${metadata.title}" is being created with ArweaveID #${metadata.arweaveId}`,
+      ];
+
     default:
       return [
         'Moving convoy',

@@ -17,6 +17,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 import { Text, createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, Editable, withReact } from 'slate-react';
@@ -39,55 +40,66 @@ import { LoreScrollEntity } from './LoreScrollEntity';
 enum CREATING_STEPS {
   INITIAL = 0,
   UPLOADING_TO_ARWEAVE = 1,
-  WAITING_FOR_ARWEAVE = 2,
-  ADDING_TO_STARKNET = 3,
-  WAITING_FOR_STARKNET = 4,
-  DONE = 5,
+  ADDING_TO_STARKNET = 2,
+  WAITING_FOR_STARKNET = 3,
+  DONE = 4,
 }
 
-const arweave = Arweave.init({
-  host: 'arweave.net',
-  port: 443,
-  protocol: 'https',
-});
+type TEntityJSON = {
+  title: string;
+  markdown: string;
+  excerpt: string;
+  owner: string;
+  owner_display_name: string;
+  pois: any[];
+};
+
+const LOCAL_STORAGE_LORE_DRAFT_KEY = 'lore.draft';
+const LOCAL_STORAGE_LORE_DRAFT_ARWEAVE_KEY = 'lore.draft.arweaveId';
 
 export const CreateLoreEntity = () => {
   // States
-  const [entityAuthor, setEntityAuthor] = useState('');
+  const isMounted = useRef(false);
   const [entityTitle, setEntityTitle] = useState('');
   const [editorValue, setEditorValue] = useState(initialValue);
+  const [entityAuthor, setEntityAuthor] = useState('');
+  const [entityExcerpt, setEntityExcerpt] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [creatingStep, setCreatingStep] = useState<CREATING_STEPS>(
     CREATING_STEPS.INITIAL
   );
-  const [arweaveTxID, setArweaveTxID] = useState<string | null>(null);
+  const [arweaveId, setArweaveId] = useState<string | null>(null);
   const [starknetTxID, setStarknetTxID] = useState<string | undefined>(
     undefined
   );
-  const [l2EthBalance, setL2EthBalance] = useState<BN>(new BN(0));
+  const [formWorking, setFormWorking] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  // const [l2EthBalance, setL2EthBalance] = useState<BN>(new BN(0));
 
   // Hooks
   const starknet = useStarknet();
 
-  const {
-    data: ethBalanceData,
-    loading: ethBalanceLoading,
-    refresh,
-  } = useStarknetCall({
-    contract: new Contract(
-      erc20Abi as Abi,
-      '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
-      starknet.library
-    ),
-    method: 'balanceOf',
-    args: [toBN(starknet.account as string).toString()],
-  });
+  // const {
+  //   data: ethBalanceData,
+  //   loading: ethBalanceLoading,
+  //   refresh,
+  // } = useStarknetCall({
+  //   contract: new Contract(
+  //     erc20Abi as Abi,
+  //     '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  //     starknet.library
+  //   ),
+  //   method: 'balanceOf',
+  //   args: [toBN(starknet.account as string).toString()],
+  // });
 
-  useEffect(() => {
-    if (ethBalanceData && ethBalanceData[0]) {
-      setL2EthBalance(ethBalanceData[0]);
-    }
-  }, [ethBalanceLoading]);
+  // useEffect(() => {
+  //   console.log(ethBalanceLoading);
+
+  //   if (ethBalanceData && ethBalanceData[0]) {
+  //     setL2EthBalance(ethBalanceData[0]);
+  //   }
+  // }, [ethBalanceLoading]);
 
   const { contract: loreContract } = useContract({
     abi: loreContractABI as Abi,
@@ -105,33 +117,41 @@ export const CreateLoreEntity = () => {
     method: 'create_entity',
   });
 
-  // Rest
-  const wait = async (milliseconds: number) => {
-    return new Promise((resolve, _) => {
-      setTimeout(resolve, milliseconds);
-    });
-  };
+  useEffect(() => {
+    // if (localStorage.getItem(LOCAL_STORAGE_LORE_DRAFT_KEY)) {
+    //   console.log('truueee');
+    //   setHasDraft(true);
+    // }
+    // return () => {
+    //   saveDraft();
+    // };
+  }, []);
 
-  // Arweave can stuck and then throw timeout error after 20 second
-  // Doesn't mean that it's not working - just need a different approach here
-  const waitForArweave = async (arweaveId: string) => {
-    try {
-      let arweaveStatus = await arweave.transactions.getStatus(arweaveId);
-      // console.log(arweaveStatus);
+  // // Remove arweaveId connection if values are changed
+  // useEffect(() => {
+  //   if (arweaveId) {
+  //     localStorage.removeItem(LOCAL_STORAGE_LORE_DRAFT_ARWEAVE_KEY);
+  //     setArweaveId(null);
+  //   }
 
-      while (
-        arweaveStatus.confirmed === null ||
-        (arweaveStatus.confirmed &&
-          arweaveStatus.confirmed.number_of_confirmations < 1)
-      ) {
-        await wait(5000);
-        arweaveStatus = await arweave.transactions.getStatus(arweaveId);
-        // console.log(arweaveStatus);
-      }
-    } catch (error) {
-      await waitForArweave(arweaveId);
-    }
-  };
+  //   // if (isMounted.current) {
+  //   saveDraft();
+  //   // } else {
+  //   //   isMounted.current = true;
+  //   // }
+  // }, [
+  //   entityTitle,
+  //   entityAuthor,
+  //   entityExcerpt,
+  //   editorValue,
+  // ]);
+
+  // // Rest
+  // const wait = async (milliseconds: number) => {
+  //   return new Promise((resolve, _) => {
+  //     setTimeout(resolve, milliseconds);
+  //   });
+  // };
 
   const submitEntityToStarknet = async (arweaveId?) => {
     const submittedArweaveId = arweaveId;
@@ -164,15 +184,24 @@ export const CreateLoreEntity = () => {
       [], // props
     ];
 
-    return invoke({ args: args });
+    return invoke({
+      args: args,
+      metadata: {
+        action: 'lore_create_entity',
+        arweaveId,
+        title: entityTitle,
+      },
+    });
   };
 
   const markdown = slateToMarkdown(editorValue);
 
-  const entityData = {
+  const entityData: TEntityJSON = {
     title: entityTitle,
     markdown: markdown,
-    author: entityAuthor,
+    excerpt: entityExcerpt,
+    owner: starknet.account || '',
+    owner_display_name: entityAuthor,
     pois: extractPOIs(markdown),
   };
 
@@ -207,42 +236,112 @@ export const CreateLoreEntity = () => {
     return false;
   };
 
+  const restoreDraft = () => {
+    let draft: TEntityJSON | null;
+
+    try {
+      draft = JSON.parse(
+        localStorage.getItem(LOCAL_STORAGE_LORE_DRAFT_KEY) || ''
+      ) as TEntityJSON;
+
+      // console.log(draft);
+
+      // const draftArweaveId = localStorage.getItem(
+      //   LOCAL_STORAGE_LORE_DRAFT_ARWEAVE_KEY
+      // );
+      // setArweaveId(draftArweaveId);
+    } catch (error) {
+      draft = null;
+      console.log(error);
+    }
+
+    if (draft) {
+      setEntityTitle(draft.title);
+      // setEntityAuthor(draft.owner_display_name); // TODO: add conversion from Markdown to Slate editor format
+      setEntityAuthor(draft.owner_display_name);
+      setEntityExcerpt(draft.excerpt);
+    }
+
+    setHasDraft(false);
+  };
+
+  const saveDraft = () => {
+    localStorage.setItem(
+      LOCAL_STORAGE_LORE_DRAFT_KEY,
+      JSON.stringify(entityData)
+    );
+
+    if (arweaveId) {
+      localStorage.setItem(LOCAL_STORAGE_LORE_DRAFT_ARWEAVE_KEY, arweaveId);
+    }
+  };
+
+  const deleteDraft = () => {
+    localStorage.removeItem(LOCAL_STORAGE_LORE_DRAFT_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_LORE_DRAFT_ARWEAVE_KEY);
+    setHasDraft(false);
+  };
+
+  const clearForm = () => {
+    setEntityTitle('');
+    setEditorValue(initialValue);
+    setEntityAuthor('');
+    setEntityExcerpt('');
+    setArweaveId(null);
+    setStarknetTxID(undefined);
+  };
+
   const createEntity = async () => {
     if (!validateEntity()) {
       return;
     }
 
     // Clearing
-    setArweaveTxID(null);
+    setValidationErrors([]);
+    setFormWorking(false);
     setStarknetTxID(undefined);
 
     try {
       setCreatingStep(CREATING_STEPS.UPLOADING_TO_ARWEAVE);
 
-      const arweaveRes = await axios.post<UploadArweaveResponse>(
-        '/api/lore/upload_arweave',
-        entityData
-      );
+      // React Hooks don't update variable instantly so this function scope will not have the latest variable
+      let localArweaveId = arweaveId;
 
-      const arweaveId = arweaveRes.data.arweaveId;
+      // Conditionally uploading to Arweave
+      // Otherwise, a lot of duplicates might appear
+      if (!localArweaveId) {
+        const arweaveRes = await axios.post<UploadArweaveResponse>(
+          '/api/lore/upload_arweave',
+          entityData
+        );
 
-      // Waiting for Arweave to mine
-      setCreatingStep(CREATING_STEPS.WAITING_FOR_ARWEAVE);
-      setArweaveTxID(arweaveId);
+        // const arweaveRes = {
+        //   data: { arweaveId: 'tYVkPSC4ySM69NqDYDXhzbc6EBtq4BgUlOOwvxsPuhk' },
+        // };
 
-      // Wait for Arweave tx to be mined
-      await waitForArweave(arweaveId);
+        localArweaveId = arweaveRes.data.arweaveId;
+
+        setArweaveId(localArweaveId);
+
+        console.log('Set ArweaveId', localArweaveId);
+      }
 
       // Starknet
       setCreatingStep(CREATING_STEPS.ADDING_TO_STARKNET);
 
-      const receipt = await submitEntityToStarknet(arweaveId);
+      const receipt = await submitEntityToStarknet(localArweaveId);
 
-      // console.log(receipt)
+      // Rejected
+      if (!receipt) {
+        setCreatingStep(CREATING_STEPS.WAITING_FOR_STARKNET);
+        setFormWorking(false);
+        return;
+      }
 
       setStarknetTxID(receipt?.transaction_hash);
 
-      setCreatingStep(CREATING_STEPS.WAITING_FOR_STARKNET);
+      deleteDraft();
+      clearForm();
 
       await defaultProvider.waitForTransaction(
         receipt?.transaction_hash as string
@@ -250,34 +349,100 @@ export const CreateLoreEntity = () => {
 
       setCreatingStep(CREATING_STEPS.DONE);
     } catch (error) {
+      console.log('StarkNet Error', error);
       setCreatingStep(CREATING_STEPS.INITIAL);
-      console.log(error);
     }
+
+    setFormWorking(false);
   };
+
+  // async function lol() {
+  //   console.log(
+  //     loreContract?.invoke('whitelist_pois', [
+  //       [
+  //         { id: '1001', is_whitelisted: '1' },
+  //         { id: '1002', is_whitelisted: '1' },
+  //       ],
+  //     ])
+  //   );
+  // }
+
+  //   try {
+  //     const a = await invoke({
+  //       args: ['1', ['1000', '1']],
+  //     });
+
+  //     console.log(a);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   return (
     <div>
+      {/* <div onClick={lol}>asdasd</div> */}
       <div className="flex flex-col gap-1 p-2 mb-2 rounded bg-black/40">
-        <div className={`text-white text-sm uppercase pl-1 mt-1`}>Title</div>
-        <input
-          className="w-full px-4 py-4 text-xl font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80"
-          type="text"
-          value={entityTitle}
-          onChange={(ev) => setEntityTitle(ev.target.value)}
-          placeholder={`Enter title here...`}
-        />
-        <div className={`text-white text-sm uppercase pl-1 mt-2`}>Content</div>
+        {hasDraft ? (
+          <div className={`bg-green-200 text-black p-2 rounded-md mb-2`}>
+            You have saved draft. Do you want to restore it?{' '}
+            <button
+              className={`border border-black rounded-sm px-3 hover:bg-green-400/75 transition`}
+              onClick={restoreDraft}
+            >
+              Yes
+            </button>{' '}
+            or{' '}
+            <button
+              className={`border border-black rounded-sm px-3 hover:bg-green-400/75 transition`}
+              onClick={deleteDraft}
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
-        <LoreEditor
-          className={`text-white outline-none bg-gray-900 p-4 rounded-md`}
-          onChange={(value) => {
-            setEditorValue(value);
-          }}
-        />
+        <div>
+          <div className={`text-white text-sm uppercase pl-1`}>Title</div>
+          <input
+            className="w-full px-4 py-4 text-xl font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80"
+            type="text"
+            value={entityTitle}
+            onChange={(ev) => setEntityTitle(ev.target.value)}
+            placeholder={`Enter title here...`}
+          />
+        </div>
 
-        <p className={`bg-gray-800/80 text-white text-sm pl-1 rounded-md px-2`}>
-          Write backslash / to open a context menu or read instructions here
-        </p>
+        <div className={`mt-2`}>
+          <div className={`text-white text-sm uppercase pl-1 mb-1`}>
+            Content
+          </div>
+
+          <LoreEditor
+            className={`text-white outline-none bg-gray-900 p-4 rounded-md`}
+            onChange={(value) => {
+              setEditorValue(value);
+            }}
+          />
+
+          <div className={`text-gray-400 text-base rounded-md px-2 mt-1`}>
+            Write backslash / to open a context menu or read FAQ
+          </div>
+        </div>
+
+        <div className={`mt-1`}>
+          <div className={`text-white text-sm uppercase pl-1 mr-2 mb-1`}>
+            Excerpt
+          </div>
+          <TextareaAutosize
+            className="w-full px-2 py-2 text-lg font-bold leading-tight tracking-widest text-white rounded appearance-none focus:outline-none bg-gray-800/80 overflow-hidden"
+            onChange={(ev) => setEntityExcerpt(ev.target.value)}
+            value={entityExcerpt}
+          />
+          <div className={`text-gray-400 text-base rounded-md px-2`}>
+            Here you can write a short intro or description what is your story
+            about.
+          </div>
+        </div>
 
         <div className={`mt-1`}>
           <div className={`text-white text-sm uppercase pl-1 mr-2 mb-1`}>
@@ -294,13 +459,14 @@ export const CreateLoreEntity = () => {
 
         <div className={`mt-2`}>
           <Button
-            variant={
-              creatingStep > 0 || !starknet.account ? 'secondary' : 'primary'
-            }
+            variant={`primary`}
+            // variant={
+            //   creatingStep > 0 || !starknet.account ? 'secondary' : 'primary'
+            // }
             size="md"
-            disabled={creatingStep > 0 || !starknet.account}
+            disabled={formWorking || !starknet.account}
             onClick={createEntity}
-            loading={creatingStep > 0}
+            loading={formWorking}
           >
             {starknet.account ? 'Create scroll' : 'Connect starknet wallet'}
           </Button>
@@ -323,7 +489,7 @@ export const CreateLoreEntity = () => {
         >
           <div className={`border-b border-white absolute top-2 w-full`}></div>
           <div
-            className={`grid grid-cols-5 gap-2 text-center leading-none mb-2`}
+            className={`grid grid-cols-4 gap-2 text-center leading-none mb-2`}
           >
             <div
               className={clsx({
@@ -335,17 +501,6 @@ export const CreateLoreEntity = () => {
                 className={`bg-white w-4 h-4 rounded-full mx-auto mb-2`}
               ></div>
               Uploading to Arweave
-            </div>
-            <div
-              className={clsx({
-                'text-gray-500':
-                  creatingStep !== CREATING_STEPS.WAITING_FOR_ARWEAVE,
-              })}
-            >
-              <div
-                className={`bg-white w-4 h-4 rounded-full mx-auto mb-2`}
-              ></div>
-              Waiting for Arweave
             </div>
             <div
               className={clsx({
@@ -369,13 +524,15 @@ export const CreateLoreEntity = () => {
               ></div>
               Waiting for StarkNet
               {starknetError && (
-                <Button
-                  onClick={() => {
-                    submitEntityToStarknet();
-                  }}
-                >
-                  Resubmit Starknet Transaction
-                </Button>
+                <div className={`mt-2`}>
+                  <Button
+                    onClick={() => {
+                      submitEntityToStarknet(arweaveId);
+                    }}
+                  >
+                    Resubmit Transaction
+                  </Button>
+                </div>
               )}
             </div>
             <div
@@ -390,16 +547,16 @@ export const CreateLoreEntity = () => {
             </div>
           </div>
 
-          {arweaveTxID ? (
+          {arweaveId ? (
             <div>
               Arweave Transaction:{' '}
               <a
-                href={`https://viewblock.io/arweave/tx/${arweaveTxID}`}
+                href={`https://viewblock.io/arweave/tx/${arweaveId}`}
                 target="_blank"
                 rel="noreferrer"
                 className={`underline`}
               >
-                {arweaveTxID}
+                {arweaveId}
               </a>
             </div>
           ) : null}

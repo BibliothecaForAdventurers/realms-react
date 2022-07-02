@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { InlineKinds } from './types';
 
 export const Leaf = ({ attributes, children, leaf }) => {
-  console.log(leaf);
+  // console.log(leaf);
 
   return (
     <span
