@@ -1,11 +1,12 @@
 fragment LoreEntityFragment on LoreEntity {
-  id,
-  owner,
-  kind,
+  id
+  owner
+  ownerDisplayName
+  kind
   revisions {
-    revisionNumber,
-    title,
-    excerpt,
+    revisionNumber
+    title
+    excerpt
     createdAt
   }
 }
