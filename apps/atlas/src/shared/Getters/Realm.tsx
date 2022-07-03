@@ -105,7 +105,10 @@ export const getAccountHex = (account: string) => {
   return ethers.BigNumber.from(account).toHexString();
 };
 
-export const squadStats = (squad: TroopInterface[]) => {
+export const squadStats = (squad: TroopInterface[] | undefined | null) => {
+  if (!squad) {
+    return { agility: 0, attack: 0, defense: 0, vitality: 0, wisdom: 0 };
+  }
   return {
     agility: squad
       .map((troop) => troop.agility)
