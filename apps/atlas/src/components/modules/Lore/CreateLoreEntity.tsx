@@ -356,31 +356,8 @@ export const CreateLoreEntity = () => {
     setFormWorking(false);
   };
 
-  // async function lol() {
-  //   console.log(
-  //     loreContract?.invoke('whitelist_pois', [
-  //       [
-  //         { id: '1001', is_whitelisted: '1' },
-  //         { id: '1002', is_whitelisted: '1' },
-  //       ],
-  //     ])
-  //   );
-  // }
-
-  //   try {
-  //     const a = await invoke({
-  //       args: ['1', ['1000', '1']],
-  //     });
-
-  //     console.log(a);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-
   return (
     <div>
-      {/* <div onClick={lol}>asdasd</div> */}
       <div className="flex flex-col gap-1 p-2 mb-2 rounded bg-black/40">
         {hasDraft ? (
           <div className={`bg-green-200 text-black p-2 rounded-md mb-2`}>
