@@ -11399,7 +11399,6 @@ __metadata:
     vite-tsconfig-paths: "npm:3.5.0"
     vitest: "npm:0.15.0"
     web3modal: "npm:^1.9.8"
-    yarn: "npm:1.22.19"
   languageName: unknown
   linkType: soft
 
@@ -35749,16 +35748,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.0.0"
   checksum: 73e3e3f22a5e278bd335bd2c61bbfdae8181ecb178c304ca8438a3f34065e63885639b81e01c6ffee44dfeee7172f224c857feaec0ac2a940580b93b626f5080
-  languageName: node
-  linkType: hard
-
-"yarn@npm:1.22.19":
-  version: 1.22.19
-  resolution: "yarn@npm:1.22.19"
-  bin:
-    yarn: bin/yarn.js
-    yarnpkg: bin/yarn.js
-  checksum: f0854159fdac7da1fc226fad61b314b1eca6098b5450959071794c2c6a0ab92936ba69b437d6f097f549f1c2b5ca16a5f9177f0fc02eddb8d96c3295e187adc6
   languageName: node
   linkType: hard
 
