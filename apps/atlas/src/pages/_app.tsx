@@ -3,7 +3,7 @@ import { UserAgentProvider } from '@quentin-sommer/react-useragent';
 import {
   StarknetProvider,
   useStarknet,
-  InjectedConnector,
+  getInstalledInjectedConnectors,
 } from '@starknet-react/core';
 import type { AppProps } from 'next/app';
 import React from 'react';
@@ -55,7 +55,7 @@ const queries = {
 };
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const connectors = [new InjectedConnector()];
+  const connectors = getInstalledInjectedConnectors();
   return (
     <BreakpointProvider queries={queries}>
       <WalletProvider>

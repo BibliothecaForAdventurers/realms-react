@@ -16,6 +16,28 @@ $ yarn dev
 # Alternatively: yarn workspace webapp run dev -p 3000
 ```
 
+To test Lore Module you will need to:
+
+1. Generate an Arweave wallet and download the private key, and add a containing `arweaveKey` to the json so the format is like:
+
+```{
+  "arweaveKey": {
+    "kty": "RSA",
+    "n": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "e": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "d": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "p": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "q": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dp": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dq": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "qi": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+}
+```
+
+2. Encrypt the file using aes-256-cbc - you can use [DevGlan](https://www.devglan.com/online-tools/aes-encryption-decryption) - using a 32 character secret key and a 16 character IV
+3. Replace the AES Encrypted Output in [Secrets File](./apps/atlas/secrets.json.enc), and add the secret key and IV used to .env file
+
 ### Features
 
 > Some common features that have been enabled to widen monorepo testing scenarios.

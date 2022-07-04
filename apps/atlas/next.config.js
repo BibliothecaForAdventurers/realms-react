@@ -75,6 +75,10 @@ const nextConfig = {
   // @link https://nextjs.org/docs/advanced-features/compiler#minification
   swcMinify: true,
 
+  // Standalone build
+  // @link https://nextjs.org/docs/advanced-features/output-file-tracing#automatically-copying-traced-files-experimental
+  output: 'standalone',
+
   compiler: {
     // @https://nextjs.org/docs/advanced-features/compiler#remove-react-properties
     // Rust regexes, the syntax is different from js, see https://docs.rs/regex.
@@ -85,18 +89,22 @@ const nextConfig = {
   },
 
   experimental: {
-    // React 18
-    // @link https://nextjs.org/docs/advanced-features/react-18
-    reactRoot: true,
-    // React 18 streaming
-    // @link https://nextjs.org/docs/advanced-features/react-18/streaming
-    runtime: undefined,
+    browsersListForSwc: true,
+    legacyBrowsers: false,
+    images: {
+      allowFutureImage: true,
+      layoutRaw: true,
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'avatars.githubusercontent.com',
+        },
+      ],
+      unoptimized: false,
+    },
     // React 18 server components
     // @link https://nextjs.org/docs/advanced-features/react-18/server-components
     serverComponents: false,
-    // Standalone build
-    // @link https://nextjs.org/docs/advanced-features/output-file-tracing#automatically-copying-traced-files-experimental
-    outputStandalone: false,
     // @link https://nextjs.org/docs/advanced-features/output-file-tracing#caveats
     outputFileTracingRoot: undefined, // ,path.join(__dirname, '../../'),
     // Prefer loading of ES Modules over CommonJS
@@ -137,14 +145,15 @@ const nextConfig = {
 
   // @link https://nextjs.org/docs/basic-features/image-optimization
   images: {
-    loader: 'default',
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     disableStaticImages: false,
-    // https://nextjs.org/docs/api-reference/next/image#caching-behavior
     minimumCacheTTL: 60,
-    // Allowed domains for next/image
     domains: ['d23fdhqc1jb9no.cloudfront.net'],
+    path: '/_next/image',
+    formats: ['image/webp'],
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   webpack: (config, { webpack, isServer }) => {

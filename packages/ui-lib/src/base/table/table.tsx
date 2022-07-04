@@ -3,10 +3,10 @@
 import { ArrayUtils } from '@bibliotheca-dao/core-lib';
 import type { AccessorFn } from '@tanstack/react-table';
 import {
-  Column,
+  flexRender,
   createTable,
   getCoreRowModel,
-  useTableInstance,
+  useReactTable,
 } from '@tanstack/react-table';
 import { useReducer, useState } from 'react';
 import type { ReactElement } from 'react';
@@ -31,20 +31,18 @@ type TableProps = {
 export function Table({ data, columns: customColumns, options }: TableProps) {
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const table = createTable().setRowType<typeof data>();
-  const { createDataColumn } = table;
-
   const defaultColumns = customColumns?.map((column) => {
-    return createDataColumn(column.accessor, {
+    return {
+      accessorKey: column.accessor,
       header: column.Header,
       cell: (info) => info.getValue(),
       footer: (props: { column: { id: any } }) => props.column.id,
-    });
+    };
   });
 
   const [columns] = useState<typeof defaultColumns>(() => [...defaultColumns]);
 
-  const instance = useTableInstance(table, {
+  const table = useReactTable({
     data,
     columns,
     state: {
@@ -69,7 +67,7 @@ export function Table({ data, columns: customColumns, options }: TableProps) {
 
       <table className="w-full text-left text-white rounded-xl">
         <thead className="uppercase rounded-xl">
-          {instance.getHeaderGroups().map((headerGroup) => (
+          {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
@@ -77,14 +75,19 @@ export function Table({ data, columns: customColumns, options }: TableProps) {
                   key={header.id}
                   colSpan={header.colSpan}
                 >
-                  {header.isPlaceholder ? null : header.renderHeader()}
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                 </th>
               ))}
             </tr>
           ))}
         </thead>
         <tbody className="shadow-inner rounded-xl">
-          {instance.getRowModel().rows.map((row, index) => (
+          {table.getRowModel().rows.map((row, index) => (
             <tr
               className={`${
                 !ArrayUtils.isEven(index + 1) && options?.is_striped
@@ -98,7 +101,7 @@ export function Table({ data, columns: customColumns, options }: TableProps) {
                   className="p-2 mx-auto text-left border border-gray-500/60"
                   key={cell.id}
                 >
-                  {cell.renderCell()}
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
             </tr>
