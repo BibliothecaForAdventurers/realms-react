@@ -5,10 +5,11 @@ import toast from 'react-hot-toast';
 import type { AddTransactionResponse } from 'starknet';
 import { getTxMessage } from '@/hooks/settling/useTxMessage';
 import { Scroll } from '@/shared/Icons';
+import { ENQUEUED_STATUS } from '../constants';
 import type { RealmsCall } from '../types';
 
 type Call = RealmsCall;
-type Tx = Call & { status: 'ENQUEUED' };
+type Tx = Call & { status: typeof ENQUEUED_STATUS };
 interface TransactionQueue {
   add: (tx: Call | Call[]) => void;
   transactions: Tx[];
@@ -37,14 +38,14 @@ export const TransactionQueueProvider = ({
         position: 'top-right',
       });
       setTx((prev) =>
-        prev.concat(tx.map((t) => ({ ...t, status: 'ENQUEUED' })))
+        prev.concat(tx.map((t) => ({ ...t, status: ENQUEUED_STATUS })))
       );
     } else {
       toast('Command Queued: ' + tx.metadata?.action, {
         icon: scrollIcon,
         position: 'top-right',
       });
-      setTx((prev) => prev.concat({ ...tx, status: 'ENQUEUED' }));
+      setTx((prev) => prev.concat({ ...tx, status: ENQUEUED_STATUS }));
     }
   };
 

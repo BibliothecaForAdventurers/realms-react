@@ -18,6 +18,7 @@ import { formatEther } from '@ethersproject/units';
 import { useStarknet } from '@starknet-react/core';
 import { BigNumber } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
+import { ENQUEUED_STATUS } from '@/constants/index';
 import { useJourneyContext } from '@/context/JourneyContext';
 import { useTransactionQueue } from '@/context/TransactionQueueContext';
 import {
@@ -273,7 +274,7 @@ export function AccountPanel() {
               onClick={() => {
                 txQueue
                   .executeMulticall(
-                    approveTxs.map((t) => ({ ...t, status: 'ENQUEUED' }))
+                    approveTxs.map((t) => ({ ...t, status: ENQUEUED_STATUS }))
                   )
                   .catch((err) => {
                     // TODO: handle error

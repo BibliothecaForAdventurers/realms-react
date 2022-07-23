@@ -8,6 +8,8 @@ import { createCall, Entrypoints } from '@/hooks/settling/useBuildings';
 import { IsOwner } from '@/shared/Getters/Realm';
 import { Scroll } from '@/shared/Icons';
 import type { RealmsCall, RealmsCardProps } from '../../types';
+import PreviewBuild from '../PreviewBuild';
+import Sidebar from '../sidebars/AtlasSideBar';
 
 type Row = {
   building: ReactElement;
@@ -25,6 +27,8 @@ export function RealmBuildings(props: RealmsCardProps): ReactElement {
   });
 
   const txQueue = useTransactionQueue();
+
+  const [previewBuild, setPreviewBuild] = useState<any>();
 
   const buildings = data?.getBuildingsByRealmId ?? [];
 
@@ -116,18 +120,13 @@ export function RealmBuildings(props: RealmsCardProps): ReactElement {
         <Button
           aria-details="Build Building on Realm"
           onClick={() => {
-            txQueue.add(
-              createCall.build({
-                realmId: props.realm.realmId,
-                buildingId: building.buildingId,
-              })
-            );
+            setPreviewBuild(building);
           }}
           variant="primary"
           type="button"
           size="xs"
         >
-          Build
+          Preview
         </Button>
       ),
     };
@@ -136,13 +135,35 @@ export function RealmBuildings(props: RealmsCardProps): ReactElement {
   return (
     <div className="w-full mt-2">
       <Table columns={columns} data={defaultData} options={tableOptions} />
-      {IsOwner(props.realm?.settledOwner) && (
-        <div className="flex justify-end w-full mt-4">
-          <Button size="xs" variant="primary">
-            Build All
+      <Sidebar isOpen={!!previewBuild}>
+        <div className="flex justify-between">
+          <p className="text-gray-400">Build Preview</p>
+          <button
+            onClick={() => {
+              setPreviewBuild(undefined);
+            }}
+          >
+            Close
+          </button>
+        </div>
+        <PreviewBuild building={previewBuild} />
+        <div className="w-full p-4 absolute left-0 bottom-0">
+          <Button
+            onClick={() => {
+              txQueue.add(
+                createCall.build({
+                  realmId: props.realm.realmId,
+                  buildingId: previewBuild.buildingId,
+                })
+              );
+            }}
+            variant="primary"
+            className="w-full"
+          >
+            Build {previewBuild?.buildingName}
           </Button>
         </div>
-      )}
+      </Sidebar>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
   useResources1155Contract,
 } from '@/hooks/settling/stark-contracts';
 import { resources } from '@/util/resources';
+import type { NetworkState } from '../types';
 
 export type Resource = {
   resourceId: number;
@@ -59,6 +60,7 @@ const ResourcesContext = createContext<{
     newResourceId: number
   ) => void;
   balance: ResourcesBalance;
+  balanceStatus: NetworkState;
   lordsBalance: string;
   updateBalance: () => void;
   getResourceById: (resourceId: number) => Resource | undefined;
@@ -79,6 +81,7 @@ export const ResourceProvider = (props: ResourceProviderProps) => {
 function useResources() {
   const { account } = useStarknet();
   const [balance, setBalance] = useState([...initBalance]);
+  const [balanceStatus, setBalanceStatus] = useState<NetworkState>('loading');
   const [lordsBalance, setLordsBalance] = useState('0');
 
   const [availableResourceIds, setAvailableResourceIds] = useState<number[]>(
@@ -99,16 +102,18 @@ function useResources() {
     args: [ownerAddressInt],
   });
 
-  const { data: resourceBalanceData, refresh: updateBalance } = useStarknetCall(
-    {
-      contract: resources1155Contract,
-      method: 'balanceOfBatch',
-      args: [
-        Array(resourceMapping.length).fill(ownerAddressInt),
-        resourceMapping,
-      ],
-    }
-  );
+  const {
+    data: resourceBalanceData,
+    error: resourcesBalanceError,
+    refresh: updateBalance,
+  } = useStarknetCall({
+    contract: resources1155Contract,
+    method: 'balanceOfBatch',
+    args: [
+      Array(resourceMapping.length).fill(ownerAddressInt),
+      resourceMapping,
+    ],
+  });
 
   const { data: exchangeRateData } = useGetExchangeRatesQuery({
     pollInterval: 5000,
@@ -176,10 +181,14 @@ function useResources() {
   }, [selectedSwapResources]);
 
   useEffect(() => {
+    if (resourcesBalanceError) {
+      setBalanceStatus('error');
+    }
     if (!resourceBalanceData || !resourceBalanceData[0]) {
       return;
     }
     const rates = exchangeRateData?.getExchangeRates ?? [];
+    setBalanceStatus('success');
     setBalance(
       resourceBalanceData[0].map((resourceBalance, index) => {
         const resourceId = index + 1;
@@ -195,7 +204,7 @@ function useResources() {
         };
       })
     );
-  }, [resourceBalanceData, exchangeRateData]);
+  }, [resourceBalanceData, resourcesBalanceError, exchangeRateData]);
 
   const getResourceById = useCallback(
     (resourceId: number) => {
@@ -222,6 +231,7 @@ function useResources() {
     updateSelectedSwapResourceQty,
     updateSelectedSwapResource,
     balance,
+    balanceStatus,
     updateBalance,
     getResourceById,
     lordsBalance,

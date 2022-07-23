@@ -2,6 +2,7 @@ import { Button } from '@bibliotheca-dao/ui-lib/base';
 import { useStarknetTransactionManager } from '@starknet-react/core';
 import Link from 'next/link';
 import type { Status, TransactionStatus } from 'starknet';
+import type { ENQUEUED_STATUS } from '@/constants/index';
 import { getTxMessage } from '@/hooks/settling/useTxMessage';
 import { ExternalLink } from '@/shared/Icons';
 
@@ -12,7 +13,7 @@ interface Metadata {
 }
 interface EnqueuedOrReceivedTransaction {
   metadata?: Metadata;
-  status: Status | TransactionStatus | 'ENQUEUED';
+  status: Status | TransactionStatus | typeof ENQUEUED_STATUS;
   transactionHash?: string;
 }
 interface TxCartItem {

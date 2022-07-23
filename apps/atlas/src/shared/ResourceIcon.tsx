@@ -65,7 +65,7 @@ const STYLES = {
 export const ResourceIcon = (props: Props) => {
   return (
     <div className={twMerge(STYLES.size[props.size], props.className)}>
-      {Components[props.resource]}
+      {Components[props.resource.replace(/ /g, '')]}
     </div>
   );
 };

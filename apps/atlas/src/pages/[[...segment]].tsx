@@ -82,6 +82,9 @@ function AtlasMain() {
       <BaseModal />
       <TransactionCartSideBar />
       <MilitarySideBar />
+      <div id="sidebar-root">
+        {/* Render children here using the AtlasSideBar component */}
+      </div>
     </div>
   );
 }

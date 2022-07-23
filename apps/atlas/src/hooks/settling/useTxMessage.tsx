@@ -1,3 +1,4 @@
+import { ENQUEUED_STATUS } from '@/constants/index';
 import { Entrypoints as BuildingMethods } from './useBuildings';
 import { Entrypoints as ResourceMethods } from './useResources';
 
@@ -9,7 +10,7 @@ interface TxMessage {
 }
 
 export function getTxMessage(tx: TxWithMetadata): TxMessage {
-  const isQueued = tx.status == 'ENQUEUED';
+  const isQueued = tx.status == ENQUEUED_STATUS;
 
   const metadata = tx.metadata;
 

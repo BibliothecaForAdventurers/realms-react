@@ -226,3 +226,5 @@ export interface MinMaxRange {
 export interface RealmsCall extends StarknetCall {
   metadata: { title: string; description: string } | any;
 }
+
+export type NetworkState = 'loading' | 'success' | 'error';

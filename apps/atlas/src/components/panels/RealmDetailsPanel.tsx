@@ -18,20 +18,27 @@ import { RealmHistory } from '@/components/tables/RealmHistory';
 import { RealmResources } from '@/components/tables/RealmResources';
 import type { RealmFragmentFragment } from '@/generated/graphql';
 import { useGetTroopStatsQuery, useGetRealmQuery } from '@/generated/graphql';
+import useRealmDetailHotkeys from '@/hooks/settling/useRealmDetailHotkeys';
 import { RealmOwner, RealmStatus, TraitTable } from '@/shared/Getters/Realm';
 import { RealmBannerHeading } from '@/shared/RealmBannerHeading';
 import { dummySquad, dummyDefenceSquad } from '@/shared/squad/DummySquad';
 import { SquadBuilder } from '@/shared/squad/Squad';
 import { shortenAddress } from '@/util/formatters';
 import { findResourceName } from '@/util/resources';
+import AtlasSidebar from '../sidebars/AtlasSideBar';
 import { RealmBuildings } from '../tables/RealmBuildings';
+import Food from './RealmDetails/Food';
+import Harvests from './RealmDetails/Harvests';
+import Military from './RealmDetails/Military';
+import Raid from './RealmDetails/Raids';
+import Statistics from './RealmDetails/Statistics';
+import RealmToolbar from './RealmDetails/Toolbar';
 
 interface RealmDetailsPanelProps {
   realmId: number;
 }
 
 export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
-  const [squad, setSquad] = useState(false);
   const [id, setId] = useState(realmId);
   const router = useRouter();
   const { data: realmData } = useGetRealmQuery({
@@ -40,56 +47,18 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
   });
 
   const realm = realmData?.realm;
-  const { data: troopStatsData } = useGetTroopStatsQuery();
 
-  const attackSquad =
-    realm?.troops?.filter((squad) => squad.squadSlot === 1) ?? [];
-  const defenseSquad =
-    realm?.troops?.filter((squad) => squad.squadSlot === 2) ?? [];
-
-  const getTrait = (realm: any, trait: string) => {
-    return realm?.traits?.find((o) => o.type === trait)
-      ? realm.traits?.find((o) => o.type === trait).qty
-      : '0';
-  };
-
-  const timeAttacked = realm?.lastAttacked
-    ? new Date(parseInt(realm.lastAttacked)).getTime()
-    : 0;
-
+  const { subview, set } = useRealmDetailHotkeys();
   // Replace with actual last time attacked
-  const time = () => {
-    const NOW_IN_MS = new Date().getTime();
-
-    return (timeAttacked + 1800).toString();
-  };
 
   const pushPage = (value) => {
     setId(parseInt(value));
     router.push('/realm/' + value);
   };
 
-  const getPopulation = () => {
-    return realm?.buildings
-      ?.map((a) => a.population)
-      .reduce((prev, curr) => prev + curr, 0);
-  };
-
-  const getFood = () => {
-    return realm?.buildings
-      ?.map((a) => a.food)
-      .reduce((prev, curr) => prev + curr, 0);
-  };
-
-  const getCulture = () => {
-    return realm?.buildings
-      ?.map((a) => a.culture)
-      .reduce((prev, curr) => prev + curr, 0);
-  };
-
   return (
-    <div className="absolute z-20 grid w-full h-full grid-cols-6 gap-8 p-6 overflow-auto bg-cover bg-hero">
-      <div className="col-start-1 col-end-5">
+    <div className="absolute z-20 grid w-full h-full grid-cols-6 gap-8 overflow-auto bg-cover bg-hero">
+      <div className="col-start-1 col-end-5 relative">
         <RealmBannerHeading
           onSubmit={(value) => pushPage(parseInt(value))}
           key={realm?.realmId ?? ''}
@@ -97,7 +66,37 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
           title={realm?.name ?? ''}
           realmId={realmId}
         />
+        <div className="relative w-full">
+          <Image
+            src={`https://d23fdhqc1jb9no.cloudfront.net/renders_webp/${realmId}.webp`}
+            alt="map"
+            className="w-full -scale-x-100"
+            width={500}
+            height={320}
+            layout={'responsive'}
+          />
+        </div>
 
+        <AtlasSidebar isOpen={!!subview}>
+          <>
+            <h2>{subview}</h2>
+            {subview == 'Raid' ? <Raid realm={realmData} /> : null}
+            {subview == 'Harvests' && <Harvests realm={realmData} />}
+            {subview == 'Food' ? <Food realm={realmData} /> : null}
+            {subview == 'AttackingArmy' && (
+              <Military squad="Attack" realm={realmData} />
+            )}
+            {subview == 'DefendingArmy' && (
+              <Military squad="Defend" realm={realmData} />
+            )}
+            {subview == 'Statistics' && <Statistics realm={realmData} />}
+          </>
+        </AtlasSidebar>
+        <RealmToolbar
+          onSetSubview={(s) => set(s)}
+          className="absolute bottom-0"
+        />
+        {/*
         <div className="grid grid-flow-col grid-cols-6 gap-6 py-4">
           <div className="col-start-1 col-end-5 row-span-3">
             <Image
@@ -114,7 +113,6 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
             <CardStats className="text-2xl">
               {shortenAddress(RealmOwner(realm as RealmFragmentFragment))}
             </CardStats>
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-5 col-end-7">
             <CardTitle>Realm State</CardTitle>
@@ -124,14 +122,7 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
           </Card>
           <Card className="col-start-5 col-end-7 text-white">
             <CardTitle>Vulnerable in</CardTitle>
-            {/* <CardStats className="text-2xl">{date.toDateString()}</CardStats> */}
-            {/* <div className='flex justify-around w-full my-4 text-white'>
-              
-              <Donut label={24 - hoursAgoAttack} className='mx-auto stroke-green-400' radius={50} stroke={2} progress={getProgress()}/>
-              
-            </div> */}
             <CountdownTimer date={time()} />
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-1 col-end-3 ">
             <CardTitle>Traits</CardTitle>
@@ -162,9 +153,6 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
             {realm && <RealmResources realm={realm} loading={false} />}
           </Card>
 
-          {/* {realmData && realmData.getRealm && (
-              <RealmCard realm={realmData!.getRealm} loading={false} />
-            )} */}
 
           <Card className="col-start-1 col-end-7">
             <div className="flex justify-between w-full mb-10">
@@ -204,28 +192,25 @@ export function RealmDetailsPanel({ realmId }: RealmDetailsPanelProps) {
           <Card className="col-start-1 col-end-3 ">
             <CardTitle>Happiness</CardTitle>
             <CardStats className="text-4xl">100</CardStats>
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-3 col-end-4 ">
             <CardTitle>Culture</CardTitle>
             <CardStats className="text-4xl">{getCulture()}</CardStats>
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-4 col-end-5 ">
             <CardTitle>Food</CardTitle>
             <CardStats className="text-4xl">{getFood()}</CardStats>
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-5 col-end-7 ">
             <CardTitle>Population</CardTitle>
             <CardStats className="text-4xl">{getPopulation()}</CardStats>
-            {/* <CardIcon /> */}
           </Card>
           <Card className="col-start-1 col-end-7 ">
             <CardTitle>Buildings</CardTitle>
             {realm && <RealmBuildings realm={realm} loading={false} />}
           </Card>
         </div>
+        */}
       </div>
       <div className="grid grid-cols-6 col-start-5 col-end-7">
         <div className="col-start-1 col-end-7">

@@ -34,3 +34,11 @@ export enum CryptsMax {
   NumDoors = 12,
   NumPoints = 13,
 }
+
+export enum Squad {
+  Attack = 1,
+  Defend = 2,
+}
+
+// Transaction status for a tx in queue (for multicall)
+export const ENQUEUED_STATUS = 'ENQUEUED';
